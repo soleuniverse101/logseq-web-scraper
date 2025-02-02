@@ -1,0 +1,27 @@
+{
+  "name": "logesq-web-scrap",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --outdir=dist",
+    "dev": "esbuild src/index.ts --bundle --outdir=dist --watch"
+  },
+  "keywords": [],
+  "author": "soleuniverse101",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@logseq/libs": "^0.0.17",
+    "cheerio": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "esbuild": "0.24.2"
+  },
+  "logseq": {
+    "title": "Logseq Web Scrap",
+    "icon": "logseq.png",
+    "id": "_990n9u6uw"
+  }
+}
