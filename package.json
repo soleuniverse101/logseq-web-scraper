@@ -16,7 +16,8 @@
     "cheerio": "^1.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.13.0",
+    "@types/cheerio": "^0.22.35",
+    "@types/node": "^22.13.5",
     "vite": "^6.1.1"
   },
   "logseq": {
