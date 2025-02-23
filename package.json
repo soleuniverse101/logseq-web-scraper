@@ -4,8 +4,8 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --outdir=dist",
-    "dev": "esbuild src/index.ts --bundle --outdir=dist --watch"
+    "build": "vite build",
+    "dev": "vite"
   },
   "keywords": [],
   "author": "soleuniverse101",
@@ -17,7 +17,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.13.0",
-    "esbuild": "0.24.2"
+    "vite": "^6.1.1"
   },
   "logseq": {
     "title": "Logseq Web Scrap",
