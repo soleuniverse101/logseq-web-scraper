@@ -22,6 +22,9 @@
   "release": {
     "branches": [
       "main"
+    ],
+    "plugins": [
+      "@semantic-release/github"
     ]
   },
   "logseq": {
