@@ -1,5 +1,7 @@
 # Web Scraping Logseq Plugin
 
+A simple plugin to do structured web scraping directly inside Logseq.
+
 ## Plugin
 
 I created this plugin to solve a particular issue I face from time to time : the need to mirror the structure of a website's entries into a structure of Logseq blocks in order to keep track of specific information, each related to the said entries. One example of such a case is when I'm following a Youtube Playlist and need to create a block per video of the playlist to take notes of it.
@@ -35,3 +37,7 @@ This plugin uses the [Youtube Data API](https://developers.google.com/youtube/v3
   - Start hot rebuilding it using `pnpm dev-logseq`
   - In the plugin list page, click `Load unpacked plugin` and select the root folder (the folder containing `package.json`)
   - After each change, wait for the `dist` folder to be rebuilt, then click `reload` under the plugin (in the plugins list page)
+
+## Credits
+
+- I used [benjypng/logseq-wordcount-plugin](https://github.com/benjypng/logseq-wordcount-plugin) as an example to set up this repository, and to check how to use some features of the Logseq API
