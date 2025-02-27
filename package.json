@@ -1,5 +1,5 @@
 {
-  "name": "logesq-web-scrap",
+  "name": "logesq-web-scraper",
   "version": "1.0.0",
   "type": "module",
   "main": "dist/index.html",
@@ -19,9 +19,15 @@
     "@types/gapi.client.youtube-v3": "^0.0.4",
     "vite": "^6.1.1"
   },
+  "release": {
+    "repositoryUrl": "https://github.com/soleuniverse101",
+    "branches": [
+      "main"
+    ]
+  },
   "logseq": {
-    "title": "Logseq Web Scrap",
-    "icon": "logseq.png",
+    "title": "Logseq Web Scraper",
+    "icon": "icon.png",
     "id": "_990n9u6uw"
   }
 }
