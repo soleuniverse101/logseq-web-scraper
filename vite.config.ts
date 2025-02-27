@@ -2,15 +2,10 @@ import { defineConfig } from "vite";
 
 export default defineConfig(({ command }) => {
   if (command === "serve") {
-    return {
-      publicDir: "resources"
-    };
+    return {};
   } else {
     return {
-      build: {
-        
-      }
+      base: ""
     };
   }
-  return {};
 });

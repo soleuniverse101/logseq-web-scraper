@@ -2,22 +2,21 @@
   "name": "logesq-web-scrap",
   "version": "1.0.0",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/index.html",
   "scripts": {
     "build": "vite build",
-    "dev": "vite"
+    "dev": "vite",
+    "dev-logseq": "vite build --watch"
   },
   "keywords": [],
   "author": "soleuniverse101",
   "license": "ISC",
   "description": "",
-  "dependencies": {
-    "@logseq/libs": "^0.0.17",
-    "cheerio": "^1.0.0"
-  },
   "devDependencies": {
+    "@logseq/libs": "^0.0.17",
     "@types/cheerio": "^0.22.35",
-    "@types/node": "^22.13.5",
+    "@types/gapi": "^0.0.47",
+    "@types/gapi.client.youtube-v3": "^0.0.4",
     "vite": "^6.1.1"
   },
   "logseq": {
