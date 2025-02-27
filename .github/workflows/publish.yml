@@ -5,8 +5,11 @@ on:
     branches:
       - "main"
     paths-ignore:
-      - 'README.md'
+      - "README.md"
   workflow_dispatch:
+
+permissions:
+  contents: read # for checkout
 
 env:
   PLUGIN_NAME: ${{ github.event.repository.name }}
@@ -14,6 +17,10 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write # to be able to publish a GitHub release
+      issues: write # to be able to comment on released issues
 
     steps:
       - uses: actions/checkout@v3
