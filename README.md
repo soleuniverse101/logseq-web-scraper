@@ -6,7 +6,7 @@ I created this plugin to solve a particular issue I face from time to time : the
 
 Currently, the only feature I implemented is the Youtube Playlist scraping. I intend to add other types of web scraping when I need them to not bloat the plugin, and because I don't have a lot of free time.
 
-However, if you need a specific feature, you can always suggest it in [this repo's issues](https://github.com/soleuniverse101/logseq-web-scrapper/issues). If I find the time to implement it, I could try to add it. You may also discuss the possibility of adding it yourself through a pull request, but please inform me first before doing so.
+However, if you need a specific feature, you can always suggest it in [this repo's issues](https://github.com/soleuniverse101/logseq-web-scraper/issues). If I find the time to implement it, I could try to add it. You may also discuss the possibility of adding it yourself through a pull request, but please inform me first before doing so.
 
 ### Features
 
