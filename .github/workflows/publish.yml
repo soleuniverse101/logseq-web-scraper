@@ -1,4 +1,7 @@
-name: Build Logseq Plugin
+name: Build Logseq Plugin Release
+
+env:
+  PLUGIN_NAME: ${{ github.event.repository.name }}
 
 on:
   push:
@@ -6,16 +9,12 @@ on:
       - "main"
     paths-ignore:
       - "README.md"
-  workflow_dispatch:
 
 permissions:
   contents: read # for checkout
 
-env:
-  PLUGIN_NAME: ${{ github.event.repository.name }}
-
 jobs:
-  build:
+  build-release:
     runs-on: ubuntu-latest
 
     permissions:
@@ -23,10 +22,10 @@ jobs:
       issues: write # to be able to comment on released issues
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Use Node.js 22
-        uses: actions/setup-node@v3
+      - name: Use Node 22
+        uses: actions/setup-node@v4
         with:
           node-version: "22.x" # You might need to adjust this value to your own version
 
@@ -35,9 +34,8 @@ jobs:
           version: 10.4.1
 
       - name: Build
-        id: build
         run: |
-          pnpm i && pnpm run build
+          pnpm i && pnpm build
           mkdir ${{ env.PLUGIN_NAME }}
           cp README.md package.json icon.png ${{ env.PLUGIN_NAME }}
           mv dist ${{ env.PLUGIN_NAME }}
