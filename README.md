@@ -41,4 +41,3 @@ This plugin uses the [Youtube Data API](https://developers.google.com/youtube/v3
 ## Credits
 
 - I used [benjypng/logseq-wordcount-plugin](https://github.com/benjypng/logseq-wordcount-plugin) as an example to set up this repository, and to check how to use some features of the Logseq API
-
