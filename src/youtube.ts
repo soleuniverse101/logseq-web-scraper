@@ -86,7 +86,7 @@ function getVideoLink(id: string) {
   return "https://www.youtube.com/watch?v=" + id;
 }
 
-const playlistRegex = /^[a-zA-Z0-9_]+$/;
+const playlistRegex = /^PL[A-Za-z0-9_-]{32}$/;
 
 function checkPlaylistID(id: string) {
   if (playlistRegex.test(id)) {
