@@ -14,13 +14,15 @@ However, if you need a specific feature, you can always suggest it in [this repo
 
 - Youtube Playlists Progression 📼 : Create a youtube playlist progression with each video as a TODO block in logseq
 
-## How to set up the plugin
+## How to set up the plugin (per features)
 
 Currently only have to set up the plugin for the `Youtube Playlist Progression 📼` feature :
 
 ### Youtube Playlist Progression 📼
 
 This plugin uses the [Youtube Data API](https://developers.google.com/youtube/v3) to query Youtube playlists. To access this API, you need to enter a Google API key in the plugin settings page. To set it up, follow steps 1 through 4 of [this link](https://developers.google.com/youtube/v3/getting-started#before-you-start) to create an API key and to enable the Youtube Data API on your Google account. **Note that you don't need an OAuth 2.0 Authorization, just a simple API key**
+
+![](screenshots/youtube-playlist-feature.gif)
 
 ## Development
 
