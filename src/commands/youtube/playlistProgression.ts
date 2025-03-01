@@ -7,7 +7,7 @@ export default (async ({ uuid }) => {
     const playlistId = parsePlaylistId((await logseq.Editor.getBlock(uuid))!.content);
     var playlistDetails = await getPlaylistDetails(playlistId);
   } catch (e) {
-    logseq.UI.showMsg("❌ An error occured while querying the playlist : " + e);
+    await logseq.UI.showMsg("❌ An error occured while querying the playlist : " + e);
     return;
   }
 

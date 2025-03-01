@@ -106,9 +106,9 @@ export function parsePlaylistId(text: string) {
     return checkPlaylistID(text);
   }
 
-  if (url.pathname !== "/playlist" || !url.searchParams.has("list")) {
-    throw new InvalidPlaylistIDError();
+  if ((url.pathname === "/playlist" || url.pathname === "/watch") && url.searchParams.has("list")) {
+    return checkPlaylistID(url.searchParams.get("list")!);
   }
 
-  return checkPlaylistID(url.searchParams.get("list")!);
+  throw new InvalidPlaylistIDError();
 }
