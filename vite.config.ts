@@ -5,7 +5,10 @@ export default defineConfig(({ command }) => {
     return {};
   } else {
     return {
-      base: ""
+      base: "",
+      build: {
+        copyPublicDir: false
+      }
     };
   }
 });
