@@ -1,5 +1,5 @@
 {
-  "name": "logesq-web-scraper",
+  "name": "logseq-web-scraper",
   "version": "1.0.0",
   "type": "module",
   "main": "dist/index.html",
@@ -27,7 +27,7 @@
         "@semantic-release/github",
         {
           "assets": [
-            "logseq-web-parser.zip"
+            "logseq-web-scraper.zip"
           ]
         }
       ]
