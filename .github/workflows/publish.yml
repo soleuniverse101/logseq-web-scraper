@@ -41,7 +41,7 @@ jobs:
           ls
           echo "tag_name=git tag --sort version:refname | tail -n 1" >> $GITHUB_OUTPUT
 
-      - name: Release
-        run: npx semantic-release
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v4
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
