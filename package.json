@@ -7,7 +7,8 @@
     "build": "vite build",
     "dev": "vite",
     "dev-logseq": "vite build --watch",
-    "build-parser": "wasm-pack build --target web data-parser"
+    "build-parser": "wasm-pack build --target web data-parser",
+    "format": "prettier -w ."
   },
   "keywords": [],
   "author": "soleuniverse101",
@@ -17,6 +18,7 @@
     "@logseq/libs": "^0.0.17",
     "@types/gapi": "^0.0.47",
     "@types/gapi.client.youtube-v3": "^0.0.4",
+    "prettier": "3.6.2",
     "vite": "^6.1.1",
     "vite-plugin-top-level-await": "^1.6.0",
     "vite-plugin-wasm": "^3.5.0"

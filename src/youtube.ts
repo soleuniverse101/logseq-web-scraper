@@ -1,4 +1,8 @@
-import { GoogleAPIKeyNotSpecified, InvalidPlaylistIDError, YoutubePlaylistNotFound } from "./errors/youtube-errors.ts";
+import {
+  GoogleAPIKeyNotSpecified,
+  InvalidPlaylistIDError,
+  YoutubePlaylistNotFound,
+} from "./errors/youtube-errors.ts";
 
 type YoutubeAPI = typeof gapi.client.youtube;
 
@@ -48,10 +52,12 @@ export async function getPlaylistDetails(playlistId: string) {
   const youtube = await getYoutubeAPI();
 
   try {
-    const playlistTitle = (await youtube.playlists.list({
-      part: "snippet",
-      id: playlistId
-    })).result.items![0].snippet!.title!;
+    const playlistTitle = (
+      await youtube.playlists.list({
+        part: "snippet",
+        id: playlistId,
+      })
+    ).result.items![0].snippet!.title!;
 
     const videos: YoutubeVideo[] = [];
 
@@ -67,10 +73,12 @@ export async function getPlaylistDetails(playlistId: string) {
 
       nextPageToken = result.nextPageToken;
 
-      videos.push(...result.items!.map((playlistItem) => ({
-        title: playlistItem.snippet!.title!,
-        link: getVideoLink(playlistItem.snippet!.resourceId!.videoId!)
-      })));
+      videos.push(
+        ...result.items!.map((playlistItem) => ({
+          title: playlistItem.snippet!.title!,
+          link: getVideoLink(playlistItem.snippet!.resourceId!.videoId!),
+        })),
+      );
     } while (nextPageToken);
 
     return { playlistTitle, videos };
@@ -106,7 +114,10 @@ export function parsePlaylistId(text: string) {
     return checkPlaylistID(text);
   }
 
-  if ((url.pathname === "/playlist" || url.pathname === "/watch") && url.searchParams.has("list")) {
+  if (
+    (url.pathname === "/playlist" || url.pathname === "/watch") &&
+    url.searchParams.has("list")
+  ) {
     return checkPlaylistID(url.searchParams.get("list")!);
   }
 
