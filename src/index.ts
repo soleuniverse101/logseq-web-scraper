@@ -1,13 +1,12 @@
 import "@logseq/libs";
 import { settings } from "./settings.ts";
 
-import playlistProgression from "./commands/youtube/playlistProgression.ts";
+import commands from "./commands/index.ts";
 
 logseq.useSettingsSchema(settings).ready(main).catch(console.error);
 
 function main() {
-  logseq.Editor.registerSlashCommand(
-    "Web Scrap : Youtube Playlist Progression 📼",
-    playlistProgression,
-  );
+  for (const [tag, action] of commands) {
+    logseq.Editor.registerSlashCommand(tag, action);
+  }
 }

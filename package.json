@@ -7,7 +7,6 @@
     "build": "vite build",
     "dev": "vite",
     "dev-logseq": "vite build --watch",
-    "build-parser": "wasm-pack build --target web data-parser",
     "format": "prettier -w ."
   },
   "keywords": [],
