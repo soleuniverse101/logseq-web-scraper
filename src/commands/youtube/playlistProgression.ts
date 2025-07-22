@@ -1,6 +1,7 @@
 import { BlockCommandCallback } from "@logseq/libs/dist/LSPlugin.user";
 import { getPlaylistDetails, parsePlaylistId } from "../../youtube.ts";
 import { formatYoutubeVideoToTask } from "../../util.ts";
+import { reportIssue } from "../../errors/report.ts";
 
 export default (async ({ uuid }) => {
   try {
@@ -9,9 +10,7 @@ export default (async ({ uuid }) => {
     );
     var playlistDetails = await getPlaylistDetails(playlistId);
   } catch (e) {
-    await logseq.UI.showMsg(
-      "❌ An error occured while querying the playlist : " + e,
-    );
+    await reportIssue("An error occured while querying the playlist : " + e);
     return;
   }
 
