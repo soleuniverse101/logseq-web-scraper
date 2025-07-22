@@ -20,7 +20,7 @@ Currently only have to set up the plugin for the `Youtube Playlist Progression ð
 
 ### Youtube Playlist Progression ðŸ“¼
 
-This plugin uses the [Youtube Data API](https://developers.google.com/youtube/v3) to query Youtube playlists. To access this API, you need to enter a Google API key in the plugin settings page. To set it up, follow steps 1 through 4 of [this link](https://developers.google.com/youtube/v3/getting-started#before-you-start) to create an API key and to enable the Youtube Data API on your Google account. **Note that you don't need an OAuth 2.0 Authorization, just a simple API key**
+This plugin uses the [Youtube Data API](https://developers.google.com/youtube/v3) to query Youtube playlists. To access the API, you need to enter a Google API key in the plugin settings page. To set it up, follow steps 1 through 4 of [this link](https://developers.google.com/youtube/v3/getting-started#before-you-start) to create an API key and to enable the Youtube Data API on your Google account. **Note that you don't need an OAuth 2.0 Authorization, just a simple API key**
 
 ![](screenshots/youtube-playlist-feature.gif)
 
