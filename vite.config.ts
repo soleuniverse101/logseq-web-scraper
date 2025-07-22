@@ -1,21 +1,14 @@
-import { defineConfig, UserConfig } from "vite";
-import wasm from "vite-plugin-wasm";
-import topLevelAwait from "vite-plugin-top-level-await";
-
-const config = {
-  plugins: [wasm(), topLevelAwait()],
-} satisfies UserConfig;
+import { defineConfig } from "vite";
 
 export default defineConfig(({ command }) => {
   if (command === "serve") {
-    return config;
+    return {};
   } else {
     return {
-      ...config,
       base: "",
       build: {
-        copyPublicDir: false,
-      },
+        copyPublicDir: false
+      }
     };
   }
 });
