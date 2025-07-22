@@ -1,9 +1,9 @@
 import { BlockEntity } from "@logseq/libs/dist/LSPlugin.user";
 import {
-  defaultProducer,
-  defaultRootProducer,
-  Instruction,
-  parseInstruction,
+    defaultProducer,
+    defaultRootProducer,
+    Instruction,
+    parseInstruction,
 } from "./instructions";
 
 interface Block {

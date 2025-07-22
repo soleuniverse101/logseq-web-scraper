@@ -39,5 +39,8 @@
     "title": "Logseq Web Scraper",
     "icon": "icon.png",
     "id": "_990n9u6uw"
+  },
+  "dependencies": {
+    "peggy": "^5.0.5"
   }
 }

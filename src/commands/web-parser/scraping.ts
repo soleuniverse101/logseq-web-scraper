@@ -1,4 +1,4 @@
-import { ParsedBlock } from "./blocks";
+import { ParsedBlock } from "./requests/blocks";
 
 type ScrapedBlock = ParsedBlock & {
   source: HTMLElement;
