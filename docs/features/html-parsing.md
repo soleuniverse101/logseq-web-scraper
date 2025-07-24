@@ -18,9 +18,9 @@ TODO add link to parsing query syntax
 
 ```
 /parse learncpp.com
-  /list .lessontable
+  list .lessontable
   ` TODO ` .lessontable-header-chapter ` : ` .lessontable-header-title
-    /list .lessontable-row
+    list .lessontable-row
       .lessontable-row-number ` : ` .lessontable-row-title
 ```
 
@@ -34,3 +34,21 @@ Learn C++ – Skill up with our free tutoria
   ...
 
 ```
+
+### More examples
+
+#### Formatting
+
+Selecting elements (divs or spans probably) with class .category-title, and displaying them in a block using the first anchor element found inside :
+
+```
+...
+  .category-title
+  Title : [{a}]({a.href})
+```
+
+_You can use the link macro for this by replacing `[{a}]({a.href})` by `{link:a}`_
+
+_(**`{a}` will only evaluate to the content text of the anchor element without its link)**_
+
+TODO add result
