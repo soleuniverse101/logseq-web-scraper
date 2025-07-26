@@ -1,5 +1,6 @@
+# Packages & build artifacts
 dist/
 node_modules/
-resources/
 
+# Assets
 icon.svg
