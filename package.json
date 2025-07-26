@@ -44,7 +44,6 @@
     "id": "_990n9u6uw"
   },
   "dependencies": {
-    "peggy": "^5.0.5",
     "refltag": "file:./refltag/pkg"
   }
 }
