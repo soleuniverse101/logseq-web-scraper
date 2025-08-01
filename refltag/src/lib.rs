@@ -1,3 +1,5 @@
+#[cfg(test)]
+pub mod test;
 mod utils;
 
 use wasm_bindgen::prelude::*;
