@@ -2,12 +2,6 @@ use std::fmt::Debug;
 
 use wasm_bindgen::prelude::*;
 
-pub trait IBlockEntity: Debug {
-    fn uuid(this: &Self) -> String;
-    fn content(this: &Self) -> String;
-    fn content_eq(&self, other: &Self) -> bool;
-}
-
 #[wasm_bindgen]
 extern "C" {
     #[derive(Debug, Clone)]
@@ -23,21 +17,24 @@ extern "C" {
     pub fn content(this: &BlockEntity) -> String;
 }
 
-impl IBlockEntity for BlockEntity {
-    fn uuid(this: &Self) -> String {
-        this.uuid()
-    }
-
-    fn content(this: &Self) -> String {
-        this.content()
-    }
-    
-    fn content_eq(&self, other: &Self) -> bool {
-        todo!()
-    }
+#[derive(Debug, Clone)]
+pub struct LogseqBlock {
+    pub uuid: String,
+    pub content: String,
+    pub children: Vec<LogseqBlock>,
 }
 
-struct Block<'a> {
-    uuid: &'a str,
-    children: Vec<Block<'a>>,
+impl From<&BlockEntity> for LogseqBlock {
+    fn from(value: &BlockEntity) -> Self {
+        let children = value.children();
+        LogseqBlock {
+            uuid: value.uuid(),
+            content: value.content(),
+            children: if children.is_empty() {
+                Vec::new()
+            } else {
+                children.iter().map(|child| child.into()).collect()
+            },
+        }
+    }
 }

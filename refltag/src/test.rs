@@ -1,7 +1,6 @@
-use crate::{
-    logseq::IBlockEntity,
-    test::blocks_generator::{BlockEntityMock, generate_blocks},
-};
+use chumsky::Parser;
+
+use crate::{    logseq::LogseqBlock, parser,     test::blocks_generator::generate_blocks};
 
 pub mod blocks_generator;
 
@@ -12,7 +11,7 @@ fn generating_blocks() {
     assert!(
         generate_blocks(&src)
             .iter()
-            .zip(&vec![BlockEntityMock::new("parse https://www.google.com")])
+            .zip(&vec![LogseqBlock::generate("parse https://www.google.com")])
             .all(|(a, b)| a.content_eq(b))
     );
 }
