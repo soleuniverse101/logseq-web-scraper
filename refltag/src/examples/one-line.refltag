@@ -1,1 +1,1 @@
-parse https://www.google.com
+fetch https://www.google.com

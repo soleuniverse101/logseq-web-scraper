@@ -1,6 +1,13 @@
+mod ast;
+pub mod interpreter;
+mod logseq;
+mod parser;
+mod utils;
+mod web;
+mod error;
+
 #[cfg(test)]
 pub mod test;
-mod utils;
 
 use wasm_bindgen::prelude::*;
 
