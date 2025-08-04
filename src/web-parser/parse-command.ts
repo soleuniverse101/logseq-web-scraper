@@ -1,5 +1,5 @@
 import { BlockCommandCallback } from "@logseq/libs/dist/LSPlugin.user";
-import { reportIssue } from "../../errors/report";
+import { reportIssue } from "../errors/report";
 import { parseRootBlock } from "./requests/blocks";
 
 export default (async ({ uuid }) => {
@@ -8,9 +8,11 @@ export default (async ({ uuid }) => {
   }))!;
 
   const root = parseRootBlock(rootSourceBlock);
-console.log({root});
+  console.log({ root });
   if (!root.instruction.selector.externalSource) {
-    await reportIssue("The first argument after the type of a root block must be a URL");
+    await reportIssue(
+      "The first argument after the type of a root block must be a URL",
+    );
     return;
   }
 }) satisfies BlockCommandCallback;
