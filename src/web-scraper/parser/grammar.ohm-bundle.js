@@ -1,0 +1,1 @@
+import {makeRecipe} from 'ohm-js';const result=makeRecipe(["grammar",{"source":"Refltag {\r\n  test = \"test\"\r\n}"},"Refltag",null,"test",{"test":["define",{"sourceInterval":[13,26]},null,[],["terminal",{"sourceInterval":[20,26]},"test"]]}]);export default result;

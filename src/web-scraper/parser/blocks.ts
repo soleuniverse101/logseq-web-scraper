@@ -1,10 +1,8 @@
 import { BlockEntity } from "@logseq/libs/dist/LSPlugin.user";
-import {
-    defaultProducer,
-    defaultRootProducer,
-    Instruction,
-    parseInstruction,
-} from "./instructions";
+import { ParsingResult } from ".";
+import { ok } from "true-myth/result";
+import { Expr } from "./ast";
+import { parseExpr } from "./expressions";
 
 interface Block {
   entity: BlockEntity;
@@ -12,7 +10,7 @@ interface Block {
 
 type PartiallyParsedBlock = Block & {
   children: Block[];
-  instruction: Instruction;
+  expr: Expr;
 };
 
 export type ParsedBlock = Omit<PartiallyParsedBlock, "children"> & {
@@ -23,7 +21,7 @@ function parseBlock(block: Block): PartiallyParsedBlock {
   const resultBlock = block as PartiallyParsedBlock;
   const { entity } = block;
 
-  resultBlock.instruction = parseInstruction(entity);
+  resultBlock.expr = parseExpr(entity.content);
 
   // Children to visit next
   resultBlock.children = [];
@@ -36,7 +34,7 @@ function parseBlock(block: Block): PartiallyParsedBlock {
   return resultBlock;
 }
 
-export function parseRootBlock(root: BlockEntity): ParsedBlock {
+export function parseRootBlock(root: BlockEntity): ParsingResult {
   const toVisit: Block[] = [{ entity: root }];
 
   function visit(): PartiallyParsedBlock | null {
@@ -53,9 +51,5 @@ export function parseRootBlock(root: BlockEntity): ParsedBlock {
   const parsedRoot = visit()!;
   while (visit()) {}
 
-  if (parsedRoot.instruction.produceText == defaultProducer) {
-    parsedRoot.instruction.produceText = defaultRootProducer;
-  }
-
-  return parsedRoot as unknown as ParsedBlock;
+  return ok(parsedRoot as unknown as ParsedBlock);
 }
