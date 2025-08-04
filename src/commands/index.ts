@@ -1,5 +1,5 @@
 import { BlockCommandCallback } from "@logseq/libs/dist/LSPlugin.user";
-import parse from "../web-parser/parse-command";
+import parse from "./web-scraper/parse-command";
 import playlistProgression from "./youtube/playlistProgression";
 
 export default [

@@ -1,6 +1,6 @@
 import { BlockCommandCallback } from "@logseq/libs/dist/LSPlugin.user";
-import { reportIssue } from "../errors/report";
-import { parseRootBlock } from "./requests/blocks";
+import { reportIssue } from "../../errors/report";
+import { parseRootBlock } from "../../web-scraper/requests/blocks";
 
 export default (async ({ uuid }) => {
   const rootSourceBlock = (await logseq.Editor.getBlock(uuid, {
