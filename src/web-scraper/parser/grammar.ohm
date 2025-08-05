@@ -1,3 +1,13 @@
 Refltag {
-  test = "test"
+  Expr = fetch content? end
+
+  fetch = "fetch" space+ url
+
+  content = "\n" any+
+
+  url =  nonWhitespace+
+  
+  space :=  ~"\n" whitespace // Inline whitespace
+  nonWhitespace = ~whitespace any
+  whitespace = " " | "\t" | "\n" | "\r"
 }
