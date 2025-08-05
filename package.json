@@ -43,7 +43,7 @@
     "id": "_990n9u6uw"
   },
   "dependencies": {
-    "ohm-js": "^17.2.1",
-    "true-myth": "^9.0.1"
+    "neverthrow": "^8.2.0",
+    "ohm-js": "^17.2.1"
   }
 }
