@@ -12,3 +12,7 @@ export const binaryOp = ((left, operation, right): Expr => ({
   arg1: TerminalNode,
   arg2: NonterminalNode,
 ) => Expr;
+
+export function formatString(str: string) {
+  return str.replace(String.raw`\"`, String.raw`"`);
+}

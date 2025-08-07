@@ -2,6 +2,11 @@ import { ValueFromType } from "./data";
 
 export type Expr =
   | {
+      type: "definition";
+      identifier: ExprFromType<"identifier">;
+      right: Expr;
+    }
+  | {
       type: "binaryOp";
       left: Expr;
       operation: Operation;

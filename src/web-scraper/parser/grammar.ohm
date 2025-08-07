@@ -1,4 +1,13 @@
 Refltag {
+  Statement =
+    | Definition
+    | Expression
+  
+  keywords =
+    | "let"
+  
+  Definition = keyword<"let"> identifier "=" Expression
+
   Expression = Term
   Primary =
     | identifier
@@ -11,7 +20,7 @@ Refltag {
     | Factor ("*" | "/") Primary -- binary
     | Primary
 
-  identifier = ("_" | letter) identifierPart+ ~identifierPart
+  identifier = ~keyword<keywords> (("_" | letter) identifierPart*) ~identifierPart
   keyword<k> = k ~identifierPart
   identifierPart = "_" | alnum
 

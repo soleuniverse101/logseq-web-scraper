@@ -12,6 +12,9 @@ import {
 } from 'ohm-js';
 
 export interface RefltagActionDict<T> extends BaseActionDict<T> {
+  Statement?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  keywords?: (this: NonterminalNode, arg0: TerminalNode) => T;
+  Definition?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode, arg2: TerminalNode, arg3: NonterminalNode) => T;
   Expression?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   Primary?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   Term_binary?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;

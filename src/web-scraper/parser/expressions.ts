@@ -10,6 +10,12 @@ type ExprResult = Result<Expr, ExprError>;
 const semantics = grammar.createSemantics();
 
 semantics.addAttribute("asToken", {
+  Definition: (_arg0, identifier, _arg2, expr): Expr => ({
+    type: "definition",
+    identifier: identifier.asToken,
+    right: expr.asToken,
+  }),
+
   Term_binary: binaryOp,
   Factor_binary: binaryOp,
 
@@ -36,4 +42,4 @@ export function parseExpr(line: string): ExprResult {
   return ok(semantics(match).asToken);
 }
 
-console.log(parseExpr("3+5/2*5"));
+console.log(parseExpr("let dsft = 5"));
