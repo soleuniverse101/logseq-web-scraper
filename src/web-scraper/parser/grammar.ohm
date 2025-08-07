@@ -1,11 +1,23 @@
 Refltag {
-  Expr = fetch content? end
+  Expression = Term
+  Primary =
+    | identifier
+    | literal
+  
+  Term =
+    | Term ("+" | "-") Factor -- binary
+    | Factor
+  Factor =
+    | Factor ("*" | "/") Primary -- binary
+    | Primary
 
-  fetch = "fetch" space+ url
+  identifier = ("_" | letter) identifierPart+ ~identifierPart
+  keyword<k> = k ~identifierPart
+  identifierPart = "_" | alnum
 
-  content = "\n" any+
-
-  url =  nonWhitespace+
+  literal = number | string
+  number = digit+
+  string = "\"" (~"\"" ("\\\"" | any))* "\""
   
   space :=  ~"\n" whitespace // Inline whitespace
   nonWhitespace = ~whitespace any

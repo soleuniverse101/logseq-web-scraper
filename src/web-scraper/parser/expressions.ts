@@ -1,30 +1,39 @@
 import { ok, Result } from "neverthrow";
-import { exprErr, ExprError } from "../../errors/parser-errors";
-import { BlockExpr, Expr } from "./ast";
+import { exprErr, ExprError } from "../errors/parser-errors";
+import { Expr } from "./ast";
+import { wrapValue } from "./data";
 import grammar from "./grammar.ohm-bundle";
+import { binaryOp, formatString } from "./semantics-utils";
 
 type ExprResult = Result<Expr, ExprError>;
 
 const semantics = grammar.createSemantics();
 
 semantics.addAttribute("asToken", {
-  Expr(expr, content, _): BlockExpr {
-    return { content: content.sourceString.substring(1), ...expr.asToken };
-  },
+  Term_binary: binaryOp,
+  Factor_binary: binaryOp,
 
-  fetch(_0, _1, url): Expr {
-    try {
-      return { type: "fetch", url: new URL(url.sourceString) };
-    } catch {
-      throw exprErr("invalidUrl", url.source.startIdx);
-    }
-  },
+  identifier: (firstChar, name): Expr => ({
+    type: "identifier",
+    name: firstChar.sourceString + name.sourceString,
+  }),
+
+  number: (n): Expr => ({
+    type: "literal",
+    value: wrapValue("Number", parseInt(n.sourceString)),
+  }),
+  string: (_arg0, content, _arg2): Expr => ({
+    type: "literal",
+    value: wrapValue("String", formatString(content.sourceString)),
+  }),
 });
 
 export function parseExpr(line: string): ExprResult {
-  try {
-    return ok(semantics(grammar.match(line)).asToken);
-  } catch (err) {
-    return err as ExprResult;
+  const match = grammar.match(line);
+  if (match.failed()) {
+    return exprErr(match);
   }
+  return ok(semantics(match).asToken);
 }
+
+console.log(parseExpr("3+5/2*5"));

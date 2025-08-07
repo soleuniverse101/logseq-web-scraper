@@ -12,10 +12,18 @@ import {
 } from 'ohm-js';
 
 export interface RefltagActionDict<T> extends BaseActionDict<T> {
-  Expr?: (this: NonterminalNode, arg0: NonterminalNode, arg1: IterationNode, arg2: NonterminalNode) => T;
-  fetch?: (this: NonterminalNode, arg0: TerminalNode, arg1: IterationNode, arg2: NonterminalNode) => T;
-  content?: (this: NonterminalNode, arg0: TerminalNode, arg1: IterationNode) => T;
-  url?: (this: NonterminalNode, arg0: IterationNode) => T;
+  Expression?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  Primary?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  Term_binary?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
+  Term?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  Factor_binary?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
+  Factor?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  identifier?: (this: NonterminalNode, arg0: NonterminalNode | TerminalNode, arg1: IterationNode) => T;
+  keyword?: (this: NonterminalNode, arg0: Node) => T;
+  identifierPart?: (this: NonterminalNode, arg0: NonterminalNode | TerminalNode) => T;
+  literal?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  number?: (this: NonterminalNode, arg0: IterationNode) => T;
+  string?: (this: NonterminalNode, arg0: TerminalNode, arg1: IterationNode, arg2: TerminalNode) => T;
   space?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   nonWhitespace?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   whitespace?: (this: NonterminalNode, arg0: TerminalNode) => T;
