@@ -41,5 +41,3 @@ export function parseASTNode(line: string): ASTResult {
   }
   return ok(semantics(match).asToken);
 }
-
-console.log(parseASTNode("let dsft = 5"));
