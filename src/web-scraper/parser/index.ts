@@ -1,9 +1,9 @@
 import { BlockEntity } from "@logseq/libs/dist/LSPlugin.user";
-import { exprParserErr, ParserError } from "../../errors/parser-errors";
-import { Block } from "./blocks";
-import { ValueType } from "./data";
 import { ok, Result } from "neverthrow";
-import { parseExpr } from "./expressions";
+import { ValueType } from "../data";
+import { exprParserErr, ParserError } from "../errors/parser-errors";
+import { parseASTNode } from "./ast/parser";
+import { Block } from "./blocks";
 
 export type ParsingResult = Result<Block[], ParserError[]>;
 
@@ -11,34 +11,34 @@ export class Parser {
   private result: Block[];
   private line = 1;
 
-  constructor(rootBlocks: BlockEntity[]) {
+  private constructor(rootBlocks: BlockEntity[]) {
     this.result = rootBlocks as unknown as Block[];
   }
 
   private parseBlock(block: Block, context: Context) {
-    const expr = parseExpr(block.content);
+    const expr = parseASTNode(block.content);
 
     if (expr.isErr()) {
-      throw exprParserErr(this.line++, expr.error);
+      throw exprParserErr(this.line, expr.error);
     }
 
     block.expr = expr.value;
+
+    this.line++;
     for (const child of block.children) {
       this.parseBlock(child, context);
     }
   }
 
-  public parse(): ParsingResult {
-    if (this.result.length == 0) {
-      throw new Error(
-        "Parser is consumed after parsing. To parse multiple times, recreate a new Parser object each time.",
-      );
-    }
+  public static parse(rootBlocks: BlockEntity[]): ParsingResult {
+    const parser = new Parser(rootBlocks);
     const context = new Context();
-    for (const block of this.result) {
-      this.parseBlock(block, context);
+
+    for (const block of parser.result) {
+      parser.parseBlock(block, context);
     }
-    return ok(this.result);
+
+    return ok(parser.result);
   }
 }
 

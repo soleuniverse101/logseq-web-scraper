@@ -1,16 +1,16 @@
 import { ok, Result } from "neverthrow";
-import { exprErr, ExprError } from "../errors/parser-errors";
-import { Expr } from "./ast";
-import { wrapValue } from "./data";
+import { ASTNode } from ".";
+import { wrapValue } from "../../data";
+import { exprErr, ExprError } from "../../errors/parser-errors";
 import grammar from "./grammar.ohm-bundle";
 import { binaryOp, formatString } from "./semantics-utils";
 
-type ExprResult = Result<Expr, ExprError>;
+type ASTResult = Result<ASTNode, ExprError>;
 
 const semantics = grammar.createSemantics();
 
 semantics.addAttribute("asToken", {
-  Definition: (_arg0, identifier, _arg2, expr): Expr => ({
+  Definition: (_arg0, identifier, _arg2, expr): ASTNode => ({
     type: "definition",
     identifier: identifier.asToken,
     right: expr.asToken,
@@ -19,22 +19,22 @@ semantics.addAttribute("asToken", {
   Term_binary: binaryOp,
   Factor_binary: binaryOp,
 
-  identifier: (firstChar, name): Expr => ({
+  identifier: (firstChar, name): ASTNode => ({
     type: "identifier",
     name: firstChar.sourceString + name.sourceString,
   }),
 
-  number: (n): Expr => ({
+  number: (n): ASTNode => ({
     type: "literal",
     value: wrapValue("Number", parseInt(n.sourceString)),
   }),
-  string: (_arg0, content, _arg2): Expr => ({
+  string: (_arg0, content, _arg2): ASTNode => ({
     type: "literal",
     value: wrapValue("String", formatString(content.sourceString)),
   }),
 });
 
-export function parseExpr(line: string): ExprResult {
+export function parseASTNode(line: string): ASTResult {
   const match = grammar.match(line);
   if (match.failed()) {
     return exprErr(match);
@@ -42,4 +42,4 @@ export function parseExpr(line: string): ExprResult {
   return ok(semantics(match).asToken);
 }
 
-console.log(parseExpr("let dsft = 5"));
+console.log(parseASTNode("let dsft = 5"));

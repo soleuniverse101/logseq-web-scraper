@@ -1,7 +1,7 @@
 import { NonterminalNode, TerminalNode } from "ohm-js";
-import { Expr, Operation } from "./ast";
+import { ASTNode, Operation } from ".";
 
-export const binaryOp = ((left, operation, right): Expr => ({
+export const binaryOp = ((left, operation, right): ASTNode => ({
   type: "binaryOp",
   left: left.asToken,
   operation: operation.sourceString as Operation,
@@ -11,7 +11,7 @@ export const binaryOp = ((left, operation, right): Expr => ({
   arg0: NonterminalNode,
   arg1: TerminalNode,
   arg2: NonterminalNode,
-) => Expr;
+) => ASTNode;
 
 export function formatString(str: string) {
   return str.replace(String.raw`\"`, String.raw`"`);
