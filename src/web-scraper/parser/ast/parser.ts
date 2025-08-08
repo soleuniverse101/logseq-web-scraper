@@ -1,11 +1,11 @@
 import { ok, Result } from "neverthrow";
 import { ASTNode } from ".";
 import { wrapValue } from "../../data";
-import { exprErr, ExprError } from "../../errors/parser-errors";
+import { astErr, AstError } from "../../errors/parser-errors";
 import grammar from "./grammar.ohm-bundle";
 import { binaryOp, formatString } from "./semantics-utils";
 
-type ASTResult = Result<ASTNode, ExprError>;
+type ASTResult = Result<ASTNode, AstError>;
 
 const semantics = grammar.createSemantics();
 
@@ -37,7 +37,7 @@ semantics.addAttribute("asToken", {
 export function parseASTNode(line: string): ASTResult {
   const match = grammar.match(line);
   if (match.failed()) {
-    return exprErr(match);
+    return astErr(match);
   }
   return ok(semantics(match).asToken);
 }

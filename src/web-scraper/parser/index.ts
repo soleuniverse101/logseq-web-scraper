@@ -1,11 +1,10 @@
 import { BlockEntity } from "@logseq/libs/dist/LSPlugin.user";
-import { ok, Result } from "neverthrow";
-import { ValueType } from "../data";
-import { exprParserErr, ParserError } from "../errors/parser-errors";
+import { err, ok, Result } from "neverthrow";
+import { astParsingErr, ParserError } from "../errors/parser-errors";
 import { parseASTNode } from "./ast/parser";
 import { Block } from "./blocks";
 
-export type ParsingResult = Result<Block[], ParserError[]>;
+export type ParsingResult = Result<Block[], ParserError>;
 
 export class Parser {
   private result: Block[];
@@ -15,61 +14,39 @@ export class Parser {
     this.result = rootBlocks as unknown as Block[];
   }
 
-  private parseBlock(block: Block, context: Context) {
-    const expr = parseASTNode(block.content);
+  private parseBlock(block: Block): Result<void, ParserError> {
+    const astNode = parseASTNode(block.content);
 
-    if (expr.isErr()) {
-      throw exprParserErr(this.line, expr.error);
+    if (astNode.isErr()) {
+      return astParsingErr(astNode.error, {
+        blockUUID: block.uuid,
+        blockLine: this.line,
+      });
     }
 
-    block.expr = expr.value;
+    block.astNode = astNode.value;
 
     this.line++;
     for (const child of block.children) {
-      this.parseBlock(child, context);
+      const result = this.parseBlock(child);
+      if (result.isErr()) {
+        return err(result.error);
+      }
     }
+
+    return ok();
   }
 
   public static parse(rootBlocks: BlockEntity[]): ParsingResult {
     const parser = new Parser(rootBlocks);
-    const context = new Context();
 
     for (const block of parser.result) {
-      parser.parseBlock(block, context);
+      const result = parser.parseBlock(block);
+      if (result.isErr()) {
+        return err(result.error);
+      }
     }
 
     return ok(parser.result);
-  }
-}
-
-class Context {
-  private variables: Map<String, ValueType> = new Map();
-  private parent: Context | null = null;
-
-  public define(name: string, type: ValueType) {
-    this.variables.set(name, type);
-  }
-
-  public isDefined(name: string) {
-    let context: Context | null = this;
-
-    while (context) {
-      if (context.isDefined(name)) {
-        return true;
-      }
-      context = context.parent;
-    }
-
-    return false;
-  }
-
-  public isRoot(): boolean {
-    return this.parent == null;
-  }
-
-  public extendScope() {
-    let context = new Context();
-    context.parent = this;
-    return context;
   }
 }

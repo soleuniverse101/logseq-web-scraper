@@ -19,10 +19,13 @@ export function convert<
 >(
   value: ValueFromType<To | (From extends ValueType ? From : never)>,
   type: To,
-) {
+): ValueFromType<To> {
   if ((value as Value).type == type) {
-    return value;
+    return value as ValueFromType<To>;
   } else {
-    return wrapValue(type, (conversions[type] as any)[value.type](value.value));
+    return wrapValue(
+      type,
+      (conversions[type] as any)[value.type](value.value),
+    ) as ValueFromType<To>;
   }
 }

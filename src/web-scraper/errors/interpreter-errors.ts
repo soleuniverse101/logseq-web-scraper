@@ -1,11 +1,13 @@
 import { err } from "neverthrow";
 import { ValueType } from "../data";
 import { Operation } from "../parser/ast";
-import { BaseError } from "./base";
+import { SourceLineContext } from "./parser-errors";
 
-export class RuntimeError extends BaseError {
-  constructor(message: string) {
-    super(message);
+export class RuntimeError extends Error {
+  readonly context: SourceLineContext;
+  constructor(message: string, context: SourceLineContext) {
+    super(`${message} (line ${context.blockLine})`);
+    this.context = context;
   }
 }
 
@@ -29,6 +31,7 @@ const errorMessages = {
 export function runtimeErr<Type extends keyof typeof errorMessages>(
   type: Type,
   info: Parameters<(typeof errorMessages)[Type]>[0],
+  context: SourceLineContext,
 ) {
-  return err(new RuntimeError(errorMessages[type](info as any)));
+  return err(new RuntimeError(errorMessages[type](info as any), context));
 }
