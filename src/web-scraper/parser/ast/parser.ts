@@ -16,8 +16,22 @@ semantics.addAttribute("asToken", {
     right: expr.asToken,
   }),
 
+  FunctionCall_parenthesized: (callee, _arg1, args, _arg3): ASTNode => ({
+    type: "functionCall",
+    callee: callee.asToken,
+    args: args.asIteration().children.map((arg) => arg.asToken),
+  }),
+  FunctionCall_freeForm: (callee, args): ASTNode => ({
+    type: "functionCall",
+    callee: callee.asToken,
+    args: args.asIteration().children.map((arg) => arg.asToken),
+  }),
+
   Term_binary: binaryOp,
   Factor_binary: binaryOp,
+
+  Primary_parenthesized: (_arg0, expression, _arg2): ASTNode =>
+    expression.asToken,
 
   identifier: (firstChar, name): ASTNode => ({
     type: "identifier",

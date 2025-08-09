@@ -1,11 +1,12 @@
 import { ValueFromType } from "../../data";
 
-export type ASTNode =
+export type ASTNode = Readonly<
   | {
       type: "definition";
       identifier: ASTNodeFromType<"identifier">;
       right: ASTNode;
     }
+  | { type: "functionCall"; callee: ASTNode; args: ASTNode[] }
   | {
       type: "binaryOp";
       left: ASTNode;
@@ -19,7 +20,8 @@ export type ASTNode =
   | {
       type: "literal";
       value: ValueFromType<"Number" | "String">;
-    };
+    }
+>;
 
 export type Operation = "+" | "-" | "*" | "/";
 

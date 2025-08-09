@@ -15,16 +15,25 @@ const reservedVariables: string[] = ["_"] satisfies (keyof ReservedVariables)[];
 export class Environment {
   private readonly variables: Map<String, Value> = new Map();
   private parent: Environment | null = null;
+  private reserved: Set<string> = new Set();
 
   public define(
     name: string,
     value: Value,
     sourceContext: SourceLineContext,
   ): RuntimeResult<void> {
-    if (reservedVariables.includes(name)) {
-      runtimeErr("reservedIdentifier", { name }, sourceContext);
+    if (reservedVariables.includes(name) || this.reserved.has(name)) {
+      return runtimeErr("reservedIdentifier", { name }, sourceContext);
     }
+    return this.loadReserved(name, value);
+  }
+
+  /**
+   * Like define but without any guard (used to load stuff directly from the interpreter)
+   */
+  public loadReserved(name: string, value: Value): RuntimeResult<void> {
     this.variables.set(name, value);
+    this.reserved.add(name);
     return ok();
   }
 

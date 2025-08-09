@@ -1,4 +1,8 @@
+import { ok } from "neverthrow";
 import { Value, ValueFromType, ValueType, wrapValue } from ".";
+import { RuntimeResult } from "../interpreter";
+import { runtimeErr } from "../errors/interpreter-errors";
+import { SourceLineContext } from "../errors/parser-errors";
 
 const conversions = {
   String: {
@@ -27,5 +31,25 @@ export function convert<
       type,
       (conversions[type] as any)[value.type](value.value),
     ) as ValueFromType<To>;
+  }
+}
+
+export function faillibleConvert<To extends keyof typeof conversions>(
+  value: Value,
+  type: To,
+  sourceContext: SourceLineContext,
+): RuntimeResult<ValueFromType<To>> {
+  if (value.type == type) {
+    return ok(value as ValueFromType<To>);
+  } else if (type in conversions && value.type in conversions[type]) {
+    return ok(
+      wrapValue(type, (conversions[type] as any)[value.type](value.value)),
+    );
+  } else {
+    return runtimeErr(
+      "unsupportedConvert",
+      { from: value.type, to: type },
+      sourceContext,
+    );
   }
 }

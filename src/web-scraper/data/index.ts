@@ -1,4 +1,10 @@
+import { StandardFunction } from "./functions";
+
 export type Value = Readonly<
+  | {
+      type: "Function";
+      value: StandardFunction;
+    }
   | {
       type: "HtmlDocument";
       value: HTMLDocument;
@@ -19,6 +25,6 @@ export type ValueFromType<Type extends ValueType> = Extract<
 export function wrapValue<Type extends ValueType>(
   type: Type,
   value: ValueFromType<Type>["value"],
-) {
-  return { type, value };
+): ValueFromType<Type> {
+  return { type, value } as ValueFromType<Type>;
 }

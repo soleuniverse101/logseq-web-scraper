@@ -14,12 +14,17 @@ export default (async ({ uuid }) => {
     return reportIssues(parsing);
   }
 
-  const output = Interpreter.interpret(parsing.value);
-  if (output.isErr()) {
-    return reportIssues(output);
+  const outputResult = Interpreter.interpret(parsing.value);
+  if (outputResult.isErr()) {
+    return reportIssues(outputResult);
   }
 
-  await logseq.Editor.insertBatchBlock(uuid, contentsFromOutput(output.value), {
+  const contents = contentsFromOutput(outputResult.value);
+  if (contents.isErr()) {
+    return reportIssues(contents);
+  }
+
+  await logseq.Editor.insertBatchBlock(uuid, contents.value, {
     sibling: true,
   });
 }) satisfies BlockCommandCallback;

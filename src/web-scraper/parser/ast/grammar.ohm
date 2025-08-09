@@ -8,10 +8,13 @@ Refltag {
   
   Definition = keyword<"let"> identifier "=" Expression
 
-  Expression = Term
-  Primary =
-    | identifier
-    | literal
+  Expression =
+    | FunctionCall
+    | Term
+  
+  FunctionCall =
+    | Expression "(" ListOf<Expression, ","> ")" -- parenthesized
+    | Expression NonemptyListOf<Expression, ","> -- freeForm
   
   Term =
     | Term ("+" | "-") Factor -- binary
@@ -19,6 +22,11 @@ Refltag {
   Factor =
     | Factor ("*" | "/") Primary -- binary
     | Primary
+
+  Primary =
+    | "(" Expression ")" -- parenthesized
+    | identifier
+    | literal
 
   identifier = ~keyword<keywords> (("_" | letter) identifierPart*) ~identifierPart
   keyword<k> = k ~identifierPart

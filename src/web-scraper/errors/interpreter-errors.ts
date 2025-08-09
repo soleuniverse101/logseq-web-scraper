@@ -22,10 +22,30 @@ const errorMessages = {
     types: ValueType[];
   }) =>
     `Unsupported operation '${operation}' applied on type(s) ${types.join(", ")}`,
+  unsupportedConvert: ({ from, to }: { from: ValueType; to: ValueType }) =>
+    `Cannot convert type '${from}' to ${to}`,
   reservedIdentifier: ({ name }: { name: string }) =>
     `Identifier '${name}' is reserved`,
   IdentifierNotFound: ({ name }: { name: string }) =>
     `Identifier '${name}' not found, make sure it's defined`,
+  valueNotCallable: ({ type }: { type: ValueType }) =>
+    `Value of type '${type}' is not callable`,
+  wrongArgumentsCount: ({
+    expectedCount,
+    actualCount,
+  }: {
+    expectedCount: number;
+    actualCount: number;
+  }) =>
+    `Function expected ${expectedCount} arguments but ${actualCount} were passed`,
+  wrongArgumentsTypes: ({
+    expectedTypes,
+    actualTypes,
+  }: {
+    expectedTypes: ValueType[];
+    actualTypes: ValueType[];
+  }) =>
+    `Function expected arguments of types [${expectedTypes.join(",")}] but ${actualTypes.join(",")} were passed`,
 } as const satisfies Record<string, (info: any) => string>;
 
 export function runtimeErr<Type extends keyof typeof errorMessages>(

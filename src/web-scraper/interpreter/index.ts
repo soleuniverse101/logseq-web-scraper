@@ -1,11 +1,12 @@
 import { err, ok, Result } from "neverthrow";
 import { Value } from "../data";
-import { RuntimeError } from "../errors/interpreter-errors";
+import { runtimeErr, RuntimeError } from "../errors/interpreter-errors";
 import { SourceLineContext } from "../errors/parser-errors";
 import { ASTNode, ASTNodeFromType, ASTNodeType } from "../parser/ast";
 import { Block } from "../parser/blocks";
 import { Environment } from "./environment";
 import { applyOperation } from "./operations";
+import { loadStandardFunctions } from "./standard-functions";
 
 export type RuntimeResult<T = Value> = Result<T, RuntimeError>;
 type ASTNodeEvaluator = {
@@ -15,6 +16,7 @@ type ASTNodeEvaluator = {
 export type OutputNode = {
   value: Value;
   children: OutputNode[];
+  context: SourceLineContext;
 };
 
 export class Interpreter {
@@ -23,7 +25,9 @@ export class Interpreter {
     blockLine: 1,
   } as SourceLineContext;
 
-  private constructor() {}
+  private constructor() {
+    loadStandardFunctions(this.env);
+  }
 
   private interpret(nodes: Block[], output: OutputNode[]): RuntimeResult<void> {
     for (const node of nodes) {
@@ -33,11 +37,18 @@ export class Interpreter {
       if (result.isErr()) {
         return err(result.error);
       }
-      
-      this.sourceContext.blockLine++;
 
-      const outputNode: OutputNode = { value: result.value, children: [] };
+      const outputNode: OutputNode = {
+        value: result.value,
+        children: [],
+        context: {
+          blockLine: this.sourceContext.blockLine,
+          blockUUID: node.uuid,
+        },
+      };
       output.push(outputNode);
+
+      this.sourceContext.blockLine++;
 
       this.env = this.env.extendScope();
       const exec = this.interpret(node.children, outputNode.children);
@@ -59,6 +70,54 @@ export class Interpreter {
   }
 
   private evaluator: ASTNodeEvaluator = {
+    functionCall: ({ callee, args }) => {
+      const funcResult = this.evaluate(callee);
+      if (funcResult.isErr()) {
+        return funcResult;
+      } else if (funcResult.value.type != "Function") {
+        return runtimeErr(
+          "valueNotCallable",
+          funcResult.value,
+          this.sourceContext,
+        );
+      }
+      const { value: func } = funcResult.value;
+
+      if (func.inputTypes.length != args.length) {
+        return runtimeErr(
+          "wrongArgumentsCount",
+          {
+            expectedCount: func.inputTypes.length,
+            actualCount: args.length,
+          },
+          this.sourceContext,
+        );
+      }
+
+      const inputs: Value[] = [];
+      for (const arg of args) {
+        const result = this.evaluate(arg);
+        if (result.isErr()) {
+          return result;
+        }
+        inputs.push(result.value);
+      }
+
+      for (let i = 0; i < inputs.length; i++) {
+        if (inputs[i].type != func.inputTypes[i]) {
+          return runtimeErr(
+            "wrongArgumentsTypes",
+            {
+              expectedTypes: func.inputTypes,
+              actualTypes: inputs.map(({ type }) => type),
+            },
+            this.sourceContext,
+          );
+        }
+      }
+
+      return func.map(inputs, this.env);
+    },
     definition: ({ identifier, right }) => {
       const result = this.evaluate(right);
       if (result.isErr()) {

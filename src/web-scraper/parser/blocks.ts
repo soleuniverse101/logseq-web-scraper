@@ -1,7 +1,8 @@
 import { BlockEntity } from "@logseq/libs/dist/LSPlugin.user";
 import { ASTNode } from "./ast";
-import { OutputNode } from "../interpreter";
-import { convert } from "../data/conversions";
+import { OutputNode, RuntimeResult } from "../interpreter";
+import { faillibleConvert } from "../data/conversions";
+import { err, ok } from "neverthrow";
 
 export type Block = Pick<BlockEntity, "content" | "uuid"> & {
   astNode: ASTNode;
@@ -13,15 +14,42 @@ export type ContentBlock = {
   children: ContentBlock[];
 };
 
-function contentFromOutput(outputNode: OutputNode): ContentBlock {
-  const content = convert(outputNode.value, "String").value;
+function contentFromOutput(
+  outputNode: OutputNode,
+): RuntimeResult<ContentBlock> {
+  const result = faillibleConvert(
+    outputNode.value,
+    "String",
+    outputNode.context,
+  );
+  if (result.isErr()) {
+    return err(result.error);
+  }
+  const content = result.value.value;
   if (outputNode.children.length == 0) {
-    return { content, children: [] };
+    return ok({ content, children: [] });
   } else {
-    return { content, children: outputNode.children.map(contentFromOutput) };
+    const childrenResult = contentsFromOutput(outputNode.children);
+    if (childrenResult.isErr()) {
+      return err(childrenResult.error);
+    }
+    return ok({
+      content,
+      children: childrenResult.value,
+    });
   }
 }
 
-export function contentsFromOutput(outputNodes: OutputNode[]): ContentBlock[] {
-  return outputNodes.map(contentFromOutput);
+export function contentsFromOutput(
+  outputNodes: OutputNode[],
+): RuntimeResult<ContentBlock[]> {
+  const contents: ContentBlock[] = [];
+  for (const node of outputNodes) {
+    const content = contentFromOutput(node);
+    if (content.isErr()) {
+      return err(content.error);
+    }
+    contents.push(content.value);
+  }
+  return ok(contents);
 }
