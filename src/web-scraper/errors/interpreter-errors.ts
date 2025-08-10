@@ -4,10 +4,14 @@ import { Operation } from "../parser/ast";
 import { SourceLineContext } from "./parser-errors";
 
 export class RuntimeError extends Error {
-  readonly context: SourceLineContext;
-  constructor(message: string, context: SourceLineContext) {
-    super(`${message} (line ${context.blockLine})`);
+  readonly context?: SourceLineContext;
+  constructor(message: string, context?: SourceLineContext) {
+    super(`${message}` + context ? `(line ${context!.blockLine})` : "");
     this.context = context;
+  }
+
+  public static withContext(error: RuntimeError, context: SourceLineContext) {
+    return new RuntimeError(error.message, context);
   }
 }
 
@@ -50,7 +54,16 @@ const errorMessages = {
     `URL '${url}' is invalid. It should be fully qualified`,
   fetchIssue: ({ url, details }: { url: string; details?: string }) =>
     `Failed fetching '${url}'` + details ? `(${details})` : "",
+  usedObjectProperty: ({ key }: { key: string }) =>
+    `Object property with name '${key}' already assigned`,
 } as const satisfies Record<string, (info: any) => string>;
+
+export function contextlessRuntimeErr<Type extends keyof typeof errorMessages>(
+  type: Type,
+  info: Parameters<(typeof errorMessages)[Type]>[0],
+) {
+  return err(new RuntimeError(errorMessages[type](info as any)));
+}
 
 export function runtimeErr<Type extends keyof typeof errorMessages>(
   type: Type,

@@ -16,6 +16,18 @@ semantics.addAttribute("asToken", {
     right: expr.asToken,
   }),
 
+  Object: (_arg0, mappings, _arg2): ASTNode => ({
+    type: "object",
+    mappings: mappings.asIteration().children.map((mapping) => ({
+      key: mapping.child(0).sourceString,
+      value: mapping.child(2).asToken,
+    })),
+  }),
+  Array: (_arg0, elements, _arg2): ASTNode => ({
+    type: "array",
+    elements: elements.asIteration().children.map((element) => element.asToken),
+  }),
+
   Lambda_parenthesized: (_arg0, parameters, _arg2, _arg3, body): ASTNode => ({
     type: "lambda",
     parameters: parameters.asIteration().children.map(({ sourceString }) => ({

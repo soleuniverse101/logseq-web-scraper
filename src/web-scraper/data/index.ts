@@ -2,6 +2,8 @@ import { ASTNodeFromType } from "../parser/ast";
 import { StandardFunction } from "./functions";
 
 export type Value = Readonly<
+  | { type: "Object"; value: Map<string, Value> }
+  | { type: "Array"; value: Value[] }
   | {
       type: "UserFunction";
       value: Omit<ASTNodeFromType<"lambda">, "type">;

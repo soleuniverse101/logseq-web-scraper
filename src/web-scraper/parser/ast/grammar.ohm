@@ -9,9 +9,15 @@ Refltag {
   Definition = keyword<"let"> identifier "=" Expression
 
   Expression =
+    | Object
+    | Array
     | Lambda
     | FunctionCall
     | Term
+  
+  Object = "{" ListOf<ObjectMapping, ","> "}"
+  ObjectMapping = identifier ":" Expression
+  Array = "[" ListOf<Expression, ","> "]"
   
   Lambda =
     | "(" ListOf<identifier, ","> ")" "=>" Expression -- parenthesized

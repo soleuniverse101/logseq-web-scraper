@@ -74,14 +74,6 @@ export class Interpreter {
   }
 
   private evaluator: ASTNodeEvaluator = {
-    lambda: async ({ parameters, body }) => {
-      for (const { name } of parameters) {
-        if (reservedVariables.includes(name)) {
-          return runtimeErr("reservedIdentifier", { name }, this.sourceContext);
-        }
-      }
-      return ok(wrapValue("UserFunction", { parameters, body }));
-    },
     definition: async ({ identifier, right }) => {
       const result = await this.evaluate(right);
       if (result.isErr()) {
@@ -96,6 +88,39 @@ export class Interpreter {
         return err(definition.error);
       }
       return ok(result.value);
+    },
+    object: async ({ mappings }) => {
+      const map: Map<string, Value> = new Map();
+      for (const { key, value } of mappings) {
+        if (map.has(key)) {
+          return runtimeErr("usedObjectProperty", { key }, this.sourceContext);
+        }
+        const result = await this.evaluate(value);
+        if (result.isErr()) {
+          return result;
+        }
+        map.set(key, result.value);
+      }
+      return ok({ type: "Object", value: map });
+    },
+    array: async ({ elements: _elements }) => {
+      const elements: Value[] = [];
+      for (const element of _elements) {
+        const result = await this.evaluate(element);
+        if (result.isErr()) {
+          return result;
+        }
+        elements.push(result.value);
+      }
+      return ok({ type: "Array", value: elements });
+    },
+    lambda: async ({ parameters, body }) => {
+      for (const { name } of parameters) {
+        if (reservedVariables.includes(name)) {
+          return runtimeErr("reservedIdentifier", { name }, this.sourceContext);
+        }
+      }
+      return ok(wrapValue("UserFunction", { parameters, body }));
     },
     functionCall: async ({ callee, args }) => {
       const funcResult = await this.evaluate(callee);

@@ -16,6 +16,9 @@ export interface RefltagActionDict<T> extends BaseActionDict<T> {
   keywords?: (this: NonterminalNode, arg0: TerminalNode) => T;
   Definition?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode, arg2: TerminalNode, arg3: NonterminalNode) => T;
   Expression?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  Object?: (this: NonterminalNode, arg0: TerminalNode, arg1: NonterminalNode, arg2: TerminalNode) => T;
+  ObjectMapping?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
+  Array?: (this: NonterminalNode, arg0: TerminalNode, arg1: NonterminalNode, arg2: TerminalNode) => T;
   Lambda_parenthesized?: (this: NonterminalNode, arg0: TerminalNode, arg1: NonterminalNode, arg2: TerminalNode, arg3: TerminalNode, arg4: NonterminalNode) => T;
   Lambda_freeForm?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
   Lambda?: (this: NonterminalNode, arg0: NonterminalNode) => T;

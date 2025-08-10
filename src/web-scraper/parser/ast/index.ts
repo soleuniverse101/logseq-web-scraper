@@ -6,6 +6,8 @@ export type ASTNode = Readonly<
       identifier: ASTNodeFromType<"identifier">;
       right: ASTNode;
     }
+  | { type: "object"; mappings: { key: string; value: ASTNode }[] }
+  | { type: "array"; elements: ASTNode[] }
   | {
       type: "lambda";
       parameters: ASTNodeFromType<"identifier">[];
