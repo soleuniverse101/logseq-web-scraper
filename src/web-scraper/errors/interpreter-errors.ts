@@ -37,7 +37,7 @@ const errorMessages = {
     expectedCount: number;
     actualCount: number;
   }) =>
-    `Function expected ${expectedCount} arguments but ${actualCount} were passed`,
+    `Function expected ${expectedCount} argument(s) but ${actualCount} were passed`,
   wrongArgumentsTypes: ({
     expectedTypes,
     actualTypes,

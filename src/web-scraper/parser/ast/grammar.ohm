@@ -9,8 +9,13 @@ Refltag {
   Definition = keyword<"let"> identifier "=" Expression
 
   Expression =
+    | Lambda
     | FunctionCall
     | Term
+  
+  Lambda =
+    | "(" ListOf<identifier, ","> ")" "=>" Expression -- parenthesized
+    | identifier "=>" Expression -- freeForm
   
   FunctionCall =
     | Expression "(" ListOf<Expression, ","> ")" -- parenthesized

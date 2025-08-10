@@ -6,6 +6,11 @@ export type ASTNode = Readonly<
       identifier: ASTNodeFromType<"identifier">;
       right: ASTNode;
     }
+  | {
+      type: "lambda";
+      parameters: ASTNodeFromType<"identifier">[];
+      body: Exclude<ASTNode, ASTNodeFromType<"definition">>;
+    }
   | { type: "functionCall"; callee: ASTNode; args: ASTNode[] }
   | {
       type: "binaryOp";

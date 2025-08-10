@@ -16,6 +16,25 @@ semantics.addAttribute("asToken", {
     right: expr.asToken,
   }),
 
+  Lambda_parenthesized: (_arg0, parameters, _arg2, _arg3, body): ASTNode => ({
+    type: "lambda",
+    parameters: parameters.asIteration().children.map(({ sourceString }) => ({
+      type: "identifier",
+      name: sourceString,
+    })),
+    body: body.asToken,
+  }),
+  Lambda_freeForm: (parameter, _arg1, body): ASTNode => ({
+    type: "lambda",
+    parameters: [
+      {
+        type: "identifier",
+        name: parameter.sourceString,
+      },
+    ],
+    body: body.asToken,
+  }),
+
   FunctionCall_parenthesized: (callee, _arg1, args, _arg3): ASTNode => ({
     type: "functionCall",
     callee: callee.asToken,

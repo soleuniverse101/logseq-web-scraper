@@ -1,8 +1,13 @@
+import { ASTNodeFromType } from "../parser/ast";
 import { StandardFunction } from "./functions";
 
 export type Value = Readonly<
   | {
-      type: "Function";
+      type: "UserFunction";
+      value: Omit<ASTNodeFromType<"lambda">, "type">;
+    }
+  | {
+      type: "StandardFunction";
       value: StandardFunction;
     }
   | {

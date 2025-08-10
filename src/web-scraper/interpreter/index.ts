@@ -1,5 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import { Value } from "../data";
+import { Value, wrapValue } from "../data";
 import { runtimeErr, RuntimeError } from "../errors/interpreter-errors";
 import { SourceLineContext } from "../errors/parser-errors";
 import { ASTNode, ASTNodeFromType, ASTNodeType } from "../parser/ast";
@@ -7,6 +7,7 @@ import { Block } from "../parser/blocks";
 import { Environment } from "./environment";
 import { applyOperation } from "./operations";
 import { loadStandardFunctions } from "./standard-functions";
+import { reservedVariables } from "./standard-variables";
 
 export type RuntimeResult<T = Value> = Result<T, RuntimeError>;
 type ASTNodeEvaluator = {
@@ -70,53 +71,13 @@ export class Interpreter {
   }
 
   private evaluator: ASTNodeEvaluator = {
-    functionCall: ({ callee, args }) => {
-      const funcResult = this.evaluate(callee);
-      if (funcResult.isErr()) {
-        return funcResult;
-      } else if (funcResult.value.type != "Function") {
-        return runtimeErr(
-          "valueNotCallable",
-          funcResult.value,
-          this.sourceContext,
-        );
-      }
-      const { value: func } = funcResult.value;
-
-      if (func.inputTypes.length != args.length) {
-        return runtimeErr(
-          "wrongArgumentsCount",
-          {
-            expectedCount: func.inputTypes.length,
-            actualCount: args.length,
-          },
-          this.sourceContext,
-        );
-      }
-
-      const inputs: Value[] = [];
-      for (const arg of args) {
-        const result = this.evaluate(arg);
-        if (result.isErr()) {
-          return result;
-        }
-        inputs.push(result.value);
-      }
-
-      for (let i = 0; i < inputs.length; i++) {
-        if (inputs[i].type != func.inputTypes[i]) {
-          return runtimeErr(
-            "wrongArgumentsTypes",
-            {
-              expectedTypes: func.inputTypes,
-              actualTypes: inputs.map(({ type }) => type),
-            },
-            this.sourceContext,
-          );
+    lambda: ({ parameters, body }) => {
+      for (const { name } of parameters) {
+        if (reservedVariables.includes(name)) {
+          return runtimeErr("reservedIdentifier", { name }, this.sourceContext);
         }
       }
-
-      return func.map(inputs, this.env);
+      return ok(wrapValue("UserFunction", { parameters, body }));
     },
     definition: ({ identifier, right }) => {
       const result = this.evaluate(right);
@@ -132,6 +93,88 @@ export class Interpreter {
         return err(definition.error);
       }
       return ok(result.value);
+    },
+    functionCall: ({ callee, args }) => {
+      const funcResult = this.evaluate(callee);
+      if (funcResult.isErr()) {
+        return funcResult;
+      } else if (
+        funcResult.value.type != "StandardFunction" &&
+        funcResult.value.type != "UserFunction"
+      ) {
+        return runtimeErr(
+          "valueNotCallable",
+          funcResult.value,
+          this.sourceContext,
+        );
+      }
+
+      let inputsCount;
+      if (funcResult.value.type == "StandardFunction") {
+        inputsCount = funcResult.value.value.inputTypes.length;
+      } else {
+        inputsCount = funcResult.value.value.parameters.length;
+      }
+
+      if (inputsCount != args.length) {
+        return runtimeErr(
+          "wrongArgumentsCount",
+          {
+            expectedCount: inputsCount,
+            actualCount: args.length,
+          },
+          this.sourceContext,
+        );
+      }
+
+      const inputs: Value[] = [];
+      for (const arg of args) {
+        const result = this.evaluate(arg);
+        if (result.isErr()) {
+          return result;
+        }
+        inputs.push(result.value);
+      }
+
+      if (funcResult.value.type == "UserFunction") {
+        const { value: func } = funcResult.value;
+
+        this.env = this.env.extendScope();
+        for (let i = 0; i < inputsCount; i++) {
+          const definition = this.env.define(
+            func.parameters[i].name,
+            inputs[i],
+            this.sourceContext,
+          );
+          if (definition.isErr()) {
+            return err(definition.error);
+          }
+        }
+        const result = this.evaluate(func.body);
+        if (result.isErr()) {
+          return result;
+        }
+        this.env = this.env.outScope();
+
+        return result;
+      }
+
+      const { value: func } = funcResult.value;
+
+      for (let i = 0; i < inputs.length; i++) {
+        if (inputs[i].type != func.inputTypes[i]) {
+          return runtimeErr(
+            "wrongArgumentsTypes",
+            {
+              expectedTypes: func.inputTypes,
+              actualTypes: inputs.map(({ type }) => type),
+            },
+            this.sourceContext,
+          );
+        }
+      }
+
+      return func.map(inputs, this.env);
     },
     binaryOp: ({ left, operation, right }) => {
       const result = Result.combine([

@@ -8,6 +8,6 @@ const standardFunctions = {
 
 export function loadStandardFunctions(env: Environment) {
   for (const [name, func] of Object.entries(standardFunctions)) {
-    env.loadReserved(name, wrapValue("Function", func));
+    env.loadReserved(name, wrapValue("StandardFunction", func));
   }
 }

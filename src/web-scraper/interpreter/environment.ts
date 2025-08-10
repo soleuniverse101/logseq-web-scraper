@@ -3,14 +3,12 @@ import { RuntimeResult } from ".";
 import { Value, ValueFromType } from "../data";
 import { runtimeErr } from "../errors/interpreter-errors";
 import { SourceLineContext } from "../errors/parser-errors";
+import { reservedVariables } from "./standard-variables";
 
 export type ElementInputs = Pick<HTMLElement, "textContent"> & {
   pageTitle: string;
   pageURL: string;
 };
-
-type ReservedVariables = { _: HTMLDocument };
-const reservedVariables: string[] = ["_"] satisfies (keyof ReservedVariables)[];
 
 export class Environment {
   private readonly variables: Map<String, Value> = new Map();
