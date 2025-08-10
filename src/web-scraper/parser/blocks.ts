@@ -14,10 +14,10 @@ export type ContentBlock = {
   children: ContentBlock[];
 };
 
-function contentFromOutput(
+async function contentFromOutput(
   outputNode: OutputNode,
 ): RuntimeResult<ContentBlock> {
-  const result = faillibleConvert(
+  const result = await faillibleConvert(
     outputNode.value,
     "String",
     outputNode.context,
@@ -29,7 +29,7 @@ function contentFromOutput(
   if (outputNode.children.length == 0) {
     return ok({ content, children: [] });
   } else {
-    const childrenResult = contentsFromOutput(outputNode.children);
+    const childrenResult = await contentsFromOutput(outputNode.children);
     if (childrenResult.isErr()) {
       return err(childrenResult.error);
     }
@@ -40,12 +40,12 @@ function contentFromOutput(
   }
 }
 
-export function contentsFromOutput(
+export async function contentsFromOutput(
   outputNodes: OutputNode[],
 ): RuntimeResult<ContentBlock[]> {
   const contents: ContentBlock[] = [];
   for (const node of outputNodes) {
-    const content = contentFromOutput(node);
+    const content = await contentFromOutput(node);
     if (content.isErr()) {
       return err(content.error);
     }

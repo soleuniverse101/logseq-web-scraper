@@ -46,6 +46,10 @@ const errorMessages = {
     actualTypes: ValueType[];
   }) =>
     `Function expected arguments of types [${expectedTypes.join(",")}] but ${actualTypes.join(",")} were passed`,
+  invalidUrl: ({ url }: { url: string }) =>
+    `URL '${url}' is invalid. It should be fully qualified`,
+  fetchIssue: ({ url, details }: { url: string; details?: string }) =>
+    `Failed fetching '${url}'` + details ? `(${details})` : "",
 } as const satisfies Record<string, (info: any) => string>;
 
 export function runtimeErr<Type extends keyof typeof errorMessages>(

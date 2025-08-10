@@ -34,7 +34,7 @@ export function convert<
   }
 }
 
-export function faillibleConvert<To extends keyof typeof conversions>(
+export async function faillibleConvert<To extends keyof typeof conversions>(
   value: Value,
   type: To,
   sourceContext: SourceLineContext,

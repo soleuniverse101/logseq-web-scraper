@@ -28,7 +28,7 @@ export interface RefltagActionDict<T> extends BaseActionDict<T> {
   Factor?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   Primary_parenthesized?: (this: NonterminalNode, arg0: TerminalNode, arg1: NonterminalNode, arg2: TerminalNode) => T;
   Primary?: (this: NonterminalNode, arg0: NonterminalNode) => T;
-  identifier?: (this: NonterminalNode, arg0: NonterminalNode | TerminalNode, arg1: IterationNode) => T;
+  identifier?: (this: NonterminalNode, arg0: NonterminalNode | TerminalNode, arg1: IterationNode, arg2: IterationNode) => T;
   keyword?: (this: NonterminalNode, arg0: Node) => T;
   identifierPart?: (this: NonterminalNode, arg0: NonterminalNode | TerminalNode) => T;
   literal?: (this: NonterminalNode, arg0: NonterminalNode) => T;

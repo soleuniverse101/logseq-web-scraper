@@ -3,12 +3,17 @@ import { Value, ValueFromType, ValueType, wrapValue } from ".";
 import { RuntimeResult } from "../interpreter";
 import { isResult } from "../scraper-utils";
 import { Environment } from "../interpreter/environment";
+import { SourceLineContext } from "../errors/parser-errors";
 
 export type StandardFunction = {
   // Can be empty
   inputTypes: ValueType[];
   outputType: ValueType;
-  map: (inputs: Value[], env: Environment) => RuntimeResult;
+  map: (
+    inputs: Value[],
+    env: Environment,
+    sourceContext: SourceLineContext,
+  ) => RuntimeResult;
 };
 
 export function createFunction<
@@ -17,20 +22,27 @@ export function createFunction<
 >(
   inputTypes: [...Inputs],
   outputType: Output,
-  map: (inputs: {
-    [Index in keyof Inputs]: ValueFromType<Inputs[Index]>["value"];
-  }) =>
+  map: (
+    inputs: {
+      [Index in keyof Inputs]: ValueFromType<Inputs[Index]>["value"];
+    },
+    env: Environment,
+    sourceContext: SourceLineContext,
+  ) =>
     | ValueFromType<Output>["value"]
+    | Promise<ValueFromType<Output>["value"]>
     | RuntimeResult<ValueFromType<Output>["value"]>,
 ): StandardFunction {
   return {
     inputTypes,
     outputType,
-    map: (inputs) => {
-      const result = map(
+    map: async (inputs, env, sourceContext) => {
+      const result = await map(
         inputs.map(({ value }) => value) as {
           [Index in keyof Inputs]: ValueFromType<Inputs[Index]>["value"];
         },
+        env,
+        sourceContext,
       );
 
       if (isResult(result)) {

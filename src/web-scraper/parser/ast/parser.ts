@@ -52,9 +52,9 @@ semantics.addAttribute("asToken", {
   Primary_parenthesized: (_arg0, expression, _arg2): ASTNode =>
     expression.asToken,
 
-  identifier: (firstChar, name): ASTNode => ({
+  identifier: (firstChar, name, sideEffect): ASTNode => ({
     type: "identifier",
-    name: firstChar.sourceString + name.sourceString,
+    name: firstChar.sourceString + name.sourceString + sideEffect.sourceString,
   }),
 
   number: (n): ASTNode => ({

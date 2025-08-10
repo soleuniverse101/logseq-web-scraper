@@ -33,7 +33,7 @@ Refltag {
     | identifier
     | literal
 
-  identifier = ~keyword<keywords> (("_" | letter) identifierPart*) ~identifierPart
+  identifier = ~keyword<keywords> (("_" | letter) identifierPart* "!"?) ~identifierPart
   keyword<k> = k ~identifierPart
   identifierPart = "_" | alnum
 

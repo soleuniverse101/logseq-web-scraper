@@ -1,9 +1,11 @@
-import { wrapValue } from "../data";
-import { createFunction, StandardFunction } from "../data/functions";
-import { Environment } from "./environment";
+import { wrapValue } from "../../data";
+import { StandardFunction } from "../../data/functions";
+import { Environment } from "../environment";
+import { impureFetch, pureFetch } from "./fetch";
 
 const standardFunctions = {
-  inc: createFunction(["Number"], "Number", ([n]) => n + 1),
+  fetch: pureFetch,
+  "fetch!": impureFetch,
 } as const satisfies Record<string, StandardFunction>;
 
 export function loadStandardFunctions(env: Environment) {

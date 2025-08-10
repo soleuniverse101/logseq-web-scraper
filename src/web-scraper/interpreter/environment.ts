@@ -3,7 +3,7 @@ import { RuntimeResult } from ".";
 import { Value, ValueFromType } from "../data";
 import { runtimeErr } from "../errors/interpreter-errors";
 import { SourceLineContext } from "../errors/parser-errors";
-import { reservedVariables } from "./standard-variables";
+import { reservedVariables } from "./standard/standard-variables";
 
 export type ElementInputs = Pick<HTMLElement, "textContent"> & {
   pageTitle: string;
@@ -15,7 +15,7 @@ export class Environment {
   private parent: Environment | null = null;
   private reserved: Set<string> = new Set();
 
-  public define(
+  public async define(
     name: string,
     value: Value,
     sourceContext: SourceLineContext,
@@ -29,17 +29,20 @@ export class Environment {
   /**
    * Like define but without any guard (used to load stuff directly from the interpreter)
    */
-  public loadReserved(name: string, value: Value): RuntimeResult<void> {
+  public async loadReserved(name: string, value: Value): RuntimeResult<void> {
     this.variables.set(name, value);
     this.reserved.add(name);
     return ok();
   }
 
-  public assignRoot(root: ValueFromType<"HtmlDocument">) {
+  public defineRoot(root: ValueFromType<"HtmlDocument">) {
     this.variables.set("_", root);
   }
 
-  public get(name: string, sourceContext: SourceLineContext): RuntimeResult {
+  public async get(
+    name: string,
+    sourceContext: SourceLineContext,
+  ): RuntimeResult {
     let env: Environment | null = this;
 
     while (env) {

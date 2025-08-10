@@ -14,12 +14,12 @@ export default (async ({ uuid }) => {
     return reportIssues(parsing);
   }
 
-  const outputResult = Interpreter.interpret(parsing.value);
+  const outputResult = await Interpreter.interpret(parsing.value);
   if (outputResult.isErr()) {
     return reportIssues(outputResult);
   }
 
-  const contents = contentsFromOutput(outputResult.value);
+  const contents = await contentsFromOutput(outputResult.value);
   if (contents.isErr()) {
     return reportIssues(contents);
   }

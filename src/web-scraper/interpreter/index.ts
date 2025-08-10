@@ -6,10 +6,10 @@ import { ASTNode, ASTNodeFromType, ASTNodeType } from "../parser/ast";
 import { Block } from "../parser/blocks";
 import { Environment } from "./environment";
 import { applyOperation } from "./operations";
-import { loadStandardFunctions } from "./standard-functions";
-import { reservedVariables } from "./standard-variables";
+import { loadStandardFunctions } from "./standard/standard-functions";
+import { reservedVariables } from "./standard/standard-variables";
 
-export type RuntimeResult<T = Value> = Result<T, RuntimeError>;
+export type RuntimeResult<T = Value> = Promise<Result<T, RuntimeError>>;
 type ASTNodeEvaluator = {
   [Type in ASTNodeType]: (node: ASTNodeFromType<Type>) => RuntimeResult;
 };
@@ -30,11 +30,14 @@ export class Interpreter {
     loadStandardFunctions(this.env);
   }
 
-  private interpret(nodes: Block[], output: OutputNode[]): RuntimeResult<void> {
+  private async interpret(
+    nodes: Block[],
+    output: OutputNode[],
+  ): RuntimeResult<void> {
     for (const node of nodes) {
       this.sourceContext.blockUUID = node.uuid;
 
-      let result = this.evaluate(node.astNode);
+      let result = await this.evaluate(node.astNode);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -52,7 +55,7 @@ export class Interpreter {
       this.sourceContext.blockLine++;
 
       this.env = this.env.extendScope();
-      const exec = this.interpret(node.children, outputNode.children);
+      const exec = await this.interpret(node.children, outputNode.children);
       if (exec.isErr()) {
         return exec;
       }
@@ -61,9 +64,9 @@ export class Interpreter {
     return ok();
   }
 
-  public static interpret(nodes: Block[]): RuntimeResult<OutputNode[]> {
+  public static async interpret(nodes: Block[]): RuntimeResult<OutputNode[]> {
     const output: OutputNode[] = [];
-    return new Interpreter().interpret(nodes, output).map(() => output);
+    return (await new Interpreter().interpret(nodes, output)).map(() => output);
   }
 
   private evaluate(node: ASTNode): RuntimeResult {
@@ -71,7 +74,7 @@ export class Interpreter {
   }
 
   private evaluator: ASTNodeEvaluator = {
-    lambda: ({ parameters, body }) => {
+    lambda: async ({ parameters, body }) => {
       for (const { name } of parameters) {
         if (reservedVariables.includes(name)) {
           return runtimeErr("reservedIdentifier", { name }, this.sourceContext);
@@ -79,12 +82,12 @@ export class Interpreter {
       }
       return ok(wrapValue("UserFunction", { parameters, body }));
     },
-    definition: ({ identifier, right }) => {
-      const result = this.evaluate(right);
+    definition: async ({ identifier, right }) => {
+      const result = await this.evaluate(right);
       if (result.isErr()) {
         return result;
       }
-      const definition = this.env.define(
+      const definition = await this.env.define(
         identifier.name,
         result.value,
         this.sourceContext,
@@ -94,8 +97,8 @@ export class Interpreter {
       }
       return ok(result.value);
     },
-    functionCall: ({ callee, args }) => {
-      const funcResult = this.evaluate(callee);
+    functionCall: async ({ callee, args }) => {
+      const funcResult = await this.evaluate(callee);
       if (funcResult.isErr()) {
         return funcResult;
       } else if (
@@ -129,7 +132,7 @@ export class Interpreter {
 
       const inputs: Value[] = [];
       for (const arg of args) {
-        const result = this.evaluate(arg);
+        const result = await this.evaluate(arg);
         if (result.isErr()) {
           return result;
         }
@@ -141,7 +144,7 @@ export class Interpreter {
 
         this.env = this.env.extendScope();
         for (let i = 0; i < inputsCount; i++) {
-          const definition = this.env.define(
+          const definition = await this.env.define(
             func.parameters[i].name,
             inputs[i],
             this.sourceContext,
@@ -150,7 +153,7 @@ export class Interpreter {
             return err(definition.error);
           }
         }
-        const result = this.evaluate(func.body);
+        const result = await this.evaluate(func.body);
         if (result.isErr()) {
           return result;
         }
@@ -174,21 +177,21 @@ export class Interpreter {
         }
       }
 
-      return func.map(inputs, this.env);
+      return func.map(inputs, this.env, this.sourceContext);
     },
-    binaryOp: ({ left, operation, right }) => {
+    binaryOp: async ({ left, operation, right }) => {
       const result = Result.combine([
-        this.evaluate(left),
-        this.evaluate(right),
+        await this.evaluate(left),
+        await this.evaluate(right),
       ]);
       if (result.isErr()) {
         return err(result.error);
       }
       return applyOperation(operation, result.value[0], result.value[1]);
     },
-    identifier: ({ name }) => {
+    identifier: async ({ name }) => {
       return this.env.get(name, this.sourceContext);
     },
-    literal: ({ value }) => ok(value),
+    literal: async ({ value }) => ok(value),
   } as const;
 }
