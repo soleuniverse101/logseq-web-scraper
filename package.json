@@ -20,7 +20,7 @@
     "@types/gapi": "^0.0.47",
     "@types/gapi.client.youtube-v3": "^0.0.4",
     "prettier": "3.6.2",
-    "vite": "^6.3.5"
+    "vite": "^7.1.1"
   },
   "release": {
     "branches": [
