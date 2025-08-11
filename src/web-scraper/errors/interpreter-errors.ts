@@ -1,7 +1,7 @@
 import { err } from "neverthrow";
 import { ValueType } from "../data";
-import { Operation } from "../parser/ast";
 import { SourceLineContext } from "./parser-errors";
+import { Operation } from "../interpreter/operations";
 
 export class RuntimeError extends Error {
   readonly context?: SourceLineContext;
@@ -56,6 +56,10 @@ const errorMessages = {
     `Failed fetching '${url}'` + details ? `(${details})` : "",
   usedObjectProperty: ({ key }: { key: string }) =>
     `Object property with name '${key}' already assigned`,
+  propertyAccessOnNonObject: ({}) =>
+    `Cannot access properties on values that are not objects`,
+  undefinedObjectProperty: ({ property }: { property: string }) =>
+    `Accessed object property '${property}' is undefined`,
 } as const satisfies Record<string, (info: any) => string>;
 
 export function contextlessRuntimeErr<Type extends keyof typeof errorMessages>(

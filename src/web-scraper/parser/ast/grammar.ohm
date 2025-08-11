@@ -8,25 +8,22 @@ Refltag {
   
   Definition = keyword<"let"> identifier "=" Expression
 
-  Expression =
-    | Object
-    | Array
-    | Lambda
+  Expression (an expression) =
+    | PropertyAccess
     | FunctionCall
+    | Lambda
     | Term
   
-  Object = "{" ListOf<ObjectMapping, ","> "}"
-  ObjectMapping = identifier ":" Expression
-  Array = "[" ListOf<Expression, ","> "]"
-  
-  Lambda =
-    | "(" ListOf<identifier, ","> ")" "=>" Expression -- parenthesized
-    | identifier "=>" Expression -- freeForm
-  
+  PropertyAccess = Expression "." identifier
+
   FunctionCall =
     | Expression "(" ListOf<Expression, ","> ")" -- parenthesized
     | Expression NonemptyListOf<Expression, ","> -- freeForm
-  
+
+  Lambda =
+    | "(" ListOf<identifier, ","> ")" "=>" Expression -- parenthesized
+    | identifier "=>" Expression -- freeForm
+
   Term =
     | Term ("+" | "-") Factor -- binary
     | Factor
@@ -36,8 +33,14 @@ Refltag {
 
   Primary =
     | "(" Expression ")" -- parenthesized
+    | Object
+    | Array
     | identifier
     | literal
+    
+  Object = "{" ListOf<ObjectMapping, ","> "}"
+  ObjectMapping = identifier ":" Expression
+  Array = "[" ListOf<Expression, ","> "]"
 
   identifier = ~keyword<keywords> (("_" | letter) identifierPart* "!"?) ~identifierPart
   keyword<k> = k ~identifierPart

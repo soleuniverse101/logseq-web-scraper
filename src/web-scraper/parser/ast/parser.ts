@@ -16,16 +16,21 @@ semantics.addAttribute("asToken", {
     right: expr.asToken,
   }),
 
-  Object: (_arg0, mappings, _arg2): ASTNode => ({
-    type: "object",
-    mappings: mappings.asIteration().children.map((mapping) => ({
-      key: mapping.child(0).sourceString,
-      value: mapping.child(2).asToken,
-    })),
+  PropertyAccess: (object, _arg1, property): ASTNode => ({
+    type: "propertyAccess",
+    object: object.asToken,
+    property: property.asToken,
   }),
-  Array: (_arg0, elements, _arg2): ASTNode => ({
-    type: "array",
-    elements: elements.asIteration().children.map((element) => element.asToken),
+
+  FunctionCall_parenthesized: (callee, _arg1, args, _arg3): ASTNode => ({
+    type: "functionCall",
+    callee: callee.asToken,
+    args: args.asIteration().children.map((arg) => arg.asToken),
+  }),
+  FunctionCall_freeForm: (callee, args): ASTNode => ({
+    type: "functionCall",
+    callee: callee.asToken,
+    args: args.asIteration().children.map((arg) => arg.asToken),
   }),
 
   Lambda_parenthesized: (_arg0, parameters, _arg2, _arg3, body): ASTNode => ({
@@ -47,22 +52,23 @@ semantics.addAttribute("asToken", {
     body: body.asToken,
   }),
 
-  FunctionCall_parenthesized: (callee, _arg1, args, _arg3): ASTNode => ({
-    type: "functionCall",
-    callee: callee.asToken,
-    args: args.asIteration().children.map((arg) => arg.asToken),
-  }),
-  FunctionCall_freeForm: (callee, args): ASTNode => ({
-    type: "functionCall",
-    callee: callee.asToken,
-    args: args.asIteration().children.map((arg) => arg.asToken),
-  }),
-
   Term_binary: binaryOp,
   Factor_binary: binaryOp,
 
   Primary_parenthesized: (_arg0, expression, _arg2): ASTNode =>
     expression.asToken,
+
+  Object: (_arg0, mappings, _arg2): ASTNode => ({
+    type: "object",
+    mappings: mappings.asIteration().children.map((mapping) => ({
+      key: mapping.child(0).sourceString,
+      value: mapping.child(2).asToken,
+    })),
+  }),
+  Array: (_arg0, elements, _arg2): ASTNode => ({
+    type: "array",
+    elements: elements.asIteration().children.map((element) => element.asToken),
+  }),
 
   identifier: (firstChar, name, sideEffect): ASTNode => ({
     type: "identifier",

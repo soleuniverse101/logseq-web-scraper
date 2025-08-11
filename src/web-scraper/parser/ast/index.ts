@@ -1,4 +1,5 @@
 import { ValueFromType } from "../../data";
+import { Operation } from "../../interpreter/operations";
 
 export type ASTNode = Readonly<
   | {
@@ -6,14 +7,19 @@ export type ASTNode = Readonly<
       identifier: ASTNodeFromType<"identifier">;
       right: ASTNode;
     }
-  | { type: "object"; mappings: { key: string; value: ASTNode }[] }
-  | { type: "array"; elements: ASTNode[] }
+  | {
+      type: "propertyAccess";
+      object: Expression;
+      property: ASTNodeFromType<"identifier">;
+    }
+  | { type: "functionCall"; callee: ASTNode; args: ASTNode[] }
   | {
       type: "lambda";
       parameters: ASTNodeFromType<"identifier">[];
-      body: Exclude<ASTNode, ASTNodeFromType<"definition">>;
+      body: Expression;
     }
-  | { type: "functionCall"; callee: ASTNode; args: ASTNode[] }
+  | { type: "object"; mappings: { key: string; value: ASTNode }[] }
+  | { type: "array"; elements: ASTNode[] }
   | {
       type: "binaryOp";
       left: ASTNode;
@@ -30,7 +36,16 @@ export type ASTNode = Readonly<
     }
 >;
 
-export type Operation = "+" | "-" | "*" | "/";
+type Expression = ASTNodeFromType<
+  | "object"
+  | "array"
+  | "lambda"
+  | "functionCall"
+  | "propertyAccess"
+  | "binaryOp"
+  | "identifier"
+  | "literal"
+>;
 
 export type ASTNodeType = ASTNode["type"];
 export type ASTNodeFromType<Type extends ASTNodeType> = Extract<
