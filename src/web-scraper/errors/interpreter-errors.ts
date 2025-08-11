@@ -6,7 +6,7 @@ import { SourceLineContext } from "./parser-errors";
 export class RuntimeError extends Error {
   readonly context?: SourceLineContext;
   constructor(message: string, context?: SourceLineContext) {
-    super(`${message}` + context ? `(line ${context!.blockLine})` : "");
+    super(message + (context ? ` (line ${context!.blockLine})` : ""));
     this.context = context;
   }
 

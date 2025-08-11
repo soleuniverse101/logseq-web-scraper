@@ -9,7 +9,7 @@ export async function reportIssue(error: Error) {
     await logseq.Editor.editBlock(error.context.blockUUID, {
       pos: error.context.column,
     });
-  } else if (error instanceof RuntimeError) {
+  } else if (error instanceof RuntimeError && error.context) {
     await logseq.Editor.selectBlock(error.context.blockUUID);
   }
 }
