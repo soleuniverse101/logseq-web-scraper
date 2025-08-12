@@ -60,6 +60,8 @@ const errorMessages = {
     `Cannot access properties on values that are not objects`,
   undefinedObjectProperty: ({ property }: { property: string }) =>
     `Accessed object property '${property}' is undefined`,
+  selectElementNotFound: ({ selector }: { selector: string }) =>
+    `No match found for selector ${selector}`,
 } as const satisfies Record<string, (info: any) => string>;
 
 export function contextlessRuntimeErr<Type extends keyof typeof errorMessages>(

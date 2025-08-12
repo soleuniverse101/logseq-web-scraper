@@ -60,7 +60,11 @@ export const impureFetch = createFunction(
     if (result.isErr()) {
       return result;
     }
-    env.defineRoot(wrapValue("HtmlDocument", result.value));
+    env.setRootElement("document", wrapValue("HtmlDocument", result.value));
+    env.setRootElement(
+      "currentElement",
+      wrapValue("HtmlElement", result.value.body),
+    );
     return ok(result.value);
   },
 );

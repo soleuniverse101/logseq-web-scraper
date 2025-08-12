@@ -28,6 +28,7 @@ export class Interpreter {
 
   private constructor() {
     loadStandardFunctions(this.env);
+    this.env.loadReserved("_", wrapValue("Object", new Map()));
   }
 
   private async interpret(
@@ -36,6 +37,8 @@ export class Interpreter {
   ): RuntimeResult<void> {
     for (const node of nodes) {
       this.sourceContext.blockUUID = node.uuid;
+
+      this.env = this.env.extendScope();
 
       let result = await this.evaluate(node.astNode);
       if (result.isErr()) {
@@ -54,7 +57,6 @@ export class Interpreter {
 
       this.sourceContext.blockLine++;
 
-      this.env = this.env.extendScope();
       const exec = await this.interpret(node.children, outputNode.children);
       if (exec.isErr()) {
         return exec;
@@ -121,6 +123,27 @@ export class Interpreter {
         }
       }
       return ok(wrapValue("UserFunction", { parameters, body }));
+    },
+    propertyAccess: async ({ object: _object, property }) => {
+      const objectResult = await this.evaluate(_object);
+      if (objectResult.isErr()) {
+        return objectResult;
+      } else if (objectResult.value.type != "Object") {
+        return runtimeErr("propertyAccessOnNonObject", {}, this.sourceContext);
+      }
+
+      const { value: object } = objectResult.value;
+      const propertyValue = object.get(property.name);
+
+      if (!propertyValue) {
+        return runtimeErr(
+          "undefinedObjectProperty",
+          { property: property.name },
+          this.sourceContext,
+        );
+      }
+
+      return ok(propertyValue);
     },
     functionCall: async ({ callee, args }) => {
       const funcResult = await this.evaluate(callee);
@@ -212,7 +235,12 @@ export class Interpreter {
       if (result.isErr()) {
         return err(result.error);
       }
-      return applyOperation(operation, result.value[0], result.value[1]);
+      return applyOperation(
+        operation,
+        result.value[0],
+        result.value[1],
+        this.sourceContext,
+      );
     },
     identifier: async ({ name }) => {
       return this.env.get(name, this.sourceContext);

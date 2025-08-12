@@ -7,10 +7,16 @@ import {
   RuntimeError,
 } from "../errors/interpreter-errors";
 import { SourceLineContext } from "../errors/parser-errors";
+import { wrapText } from "./data-utils";
 
 const conversions = {
   String: {
     HtmlDocument: (doc) => doc.title,
+    HtmlElement: (elem) =>
+      wrapText(
+        elem.innerText,
+        logseq.settings!.webScraperStringConversionMaxCount as number,
+      ),
     Number: (n) => n.toString(),
   },
 } as const satisfies {
@@ -30,7 +36,13 @@ const faillibleConversions = {
         if (result.isErr()) {
           return err(result.error);
         }
-        mappings.push(`${key}: ${result.value.value}`);
+        mappings.push(
+          `${key}: ${
+            value.type == "Number" || value.type == "Null"
+              ? result.value.value
+              : `"${result.value.value}"`
+          }`,
+        );
       }
       return ok(mappings.length == 0 ? "{}" : `{ ${mappings.join(", ")} }`);
     },
@@ -41,7 +53,11 @@ const faillibleConversions = {
         if (result.isErr()) {
           return err(result.error);
         }
-        elements.push(result.value.value);
+        elements.push(
+          value.type == "Number" || value.type == "Null"
+            ? result.value.value
+            : `"${result.value.value}"`,
+        );
       }
       return ok(elements.length == 0 ? "[]" : `[ ${elements.join(", ")} ]`);
     },
