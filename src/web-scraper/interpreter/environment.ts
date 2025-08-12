@@ -1,6 +1,6 @@
 import { ok } from "neverthrow";
 import { RuntimeResult } from ".";
-import { Value, ValueFromType } from "../data";
+import { Value, ValueFromType, ValueType, wrapValue } from "../data";
 import { runtimeErr } from "../errors/interpreter-errors";
 import { SourceLineContext } from "../errors/parser-errors";
 import { reservedVariables } from "./standard/standard-variables";
@@ -9,6 +9,13 @@ export type ElementInputs = Pick<HTMLElement, "textContent"> & {
   pageTitle: string;
   pageURL: string;
 };
+
+const root = {
+  document: "HtmlDocument",
+  currentElement: "HtmlElement",
+} as const satisfies Record<string, ValueType>;
+type Root = typeof root;
+const rootElements = Object.keys(root) as (keyof Root)[];
 
 export class Environment {
   private readonly variables: Map<String, Value> = new Map();
@@ -35,8 +42,18 @@ export class Environment {
     return ok();
   }
 
-  public defineRoot(root: ValueFromType<"HtmlDocument">) {
-    this.variables.set("_", root);
+  public setRootElement<Element extends keyof Root>(
+    element: Element,
+    value: ValueFromType<Root[Element]>,
+  ) {
+    (this.variables.get("_")!.value as Map<string, Value>).set(element, value);
+  }
+  public getRootElement<Element extends keyof Root>(
+    element: Element,
+  ): ValueFromType<Root[Element]> {
+    return (this.variables.get("_")!.value as Map<string, Value>).get(
+      element,
+    )! as ValueFromType<Root[Element]>;
   }
 
   public async get(
@@ -59,6 +76,14 @@ export class Environment {
   public extendScope() {
     let env = new Environment();
     env.parent = this;
+
+    // Shallow copy root
+    const rootMap = new Map();
+    env.loadReserved("_", wrapValue("Object", rootMap));
+    for (const rootElement of rootElements) {
+      rootMap.set(rootElement, this.getRootElement(rootElement));
+    }
+
     return env;
   }
 
