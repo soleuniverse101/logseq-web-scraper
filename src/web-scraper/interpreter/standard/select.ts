@@ -5,7 +5,7 @@ import { Environment } from "../environment";
 import { SourceLineContext } from "../../errors/parser-errors";
 import { wrapValue } from "../../data";
 
-export const map = async (
+const map = async (
   [selector]: [string],
   env: Environment,
   sourceContext: SourceLineContext,

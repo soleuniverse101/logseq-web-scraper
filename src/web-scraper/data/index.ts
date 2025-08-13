@@ -1,9 +1,8 @@
 import { ASTNodeFromType } from "../parser/ast";
 import { StandardFunction } from "./functions";
+import { SystemCall } from "./system";
 
 export type Value = Readonly<
-  | { type: "Object"; value: Map<string, Value> }
-  | { type: "Array"; value: Value[] }
   | {
       type: "UserFunction";
       value: Omit<ASTNodeFromType<"lambda">, "type">;
@@ -12,6 +11,8 @@ export type Value = Readonly<
       type: "StandardFunction";
       value: StandardFunction;
     }
+  | { type: "Object"; value: Map<string, Value> }
+  | { type: "Array"; value: Value[] }
   | {
       type: "HtmlDocument";
       value: HTMLDocument;
@@ -26,6 +27,8 @@ export type Value = Readonly<
     }
   | { type: "Number"; value: number }
   | { type: "Null"; value: null }
+  // Interpreter signals/hooks that can only be produced with standard functions
+  | { type: "SystemCall"; value: SystemCall }
 >;
 
 export type ValueType = Value["type"];

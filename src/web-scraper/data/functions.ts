@@ -1,7 +1,6 @@
 import { err, ok } from "neverthrow";
-import { Value, ValueFromType, ValueType, wrapValue } from ".";
+import { Value, ValueFromType, ValueType, wrapNull, wrapValue } from ".";
 import { RuntimeResult } from "../interpreter";
-import { isResult } from "../scraper-utils";
 import { Environment } from "../interpreter/environment";
 import { SourceLineContext } from "../errors/parser-errors";
 
@@ -28,10 +27,7 @@ export function createFunction<
     },
     env: Environment,
     sourceContext: SourceLineContext,
-  ) =>
-    | ValueFromType<Output>["value"]
-    | Promise<ValueFromType<Output>["value"]>
-    | RuntimeResult<ValueFromType<Output>["value"]>,
+  ) => RuntimeResult<ValueFromType<Output>["value"]>,
 ): StandardFunction {
   return {
     inputTypes,
@@ -45,13 +41,12 @@ export function createFunction<
         sourceContext,
       );
 
-      if (isResult(result)) {
-        if (result.isErr()) {
-          return err(result.error);
-        }
-        return ok(wrapValue(outputType, result.value));
+      if (result.isErr()) {
+        return err(result.error);
+      } else if (outputType == "Null") {
+        return ok(wrapNull());
       }
-      return ok(wrapValue(outputType, result));
+      return ok(wrapValue(outputType, result.value as any));
     },
   };
 }

@@ -23,7 +23,7 @@ export type OutputNode = {
 export class Interpreter {
   private env = new Environment();
   private sourceContext: SourceLineContext = {
-    blockLine: 1,
+    blockLine: 0,
   } as SourceLineContext;
 
   private constructor() {
@@ -36,13 +36,45 @@ export class Interpreter {
     output: OutputNode[],
   ): RuntimeResult<void> {
     for (const node of nodes) {
+      this.sourceContext.blockLine++;
       this.sourceContext.blockUUID = node.uuid;
 
-      this.env = this.env.extendScope();
+      this.extendScope();
 
       let result = await this.evaluate(node.astNode);
       if (result.isErr()) {
         return err(result.error);
+      } else if (result.value.type == "SystemCall") {
+        const sysCall = result.value.value;
+
+        switch (sysCall.type) {
+          case "generateContext":
+            for (const { prepareEnv, value } of sysCall.contexts) {
+              this.extendScope();
+              prepareEnv(this.env);
+
+              const outputNode: OutputNode = {
+                value,
+                children: [],
+                context: {
+                  blockLine: this.sourceContext.blockLine,
+                  blockUUID: node.uuid,
+                },
+              };
+              output.push(outputNode);
+
+              const exec = await this.interpret(
+                node.children,
+                outputNode.children,
+              );
+              if (exec.isErr()) {
+                return exec;
+              }
+
+              this.outScope();
+            }
+            return ok();
+        }
       }
 
       const outputNode: OutputNode = {
@@ -55,13 +87,11 @@ export class Interpreter {
       };
       output.push(outputNode);
 
-      this.sourceContext.blockLine++;
-
       const exec = await this.interpret(node.children, outputNode.children);
       if (exec.isErr()) {
         return exec;
       }
-      this.env = this.env.outScope();
+      this.outScope();
     }
     return ok();
   }
@@ -247,4 +277,11 @@ export class Interpreter {
     },
     literal: async ({ value }) => ok(value),
   } as const;
+
+  private extendScope() {
+    this.env = this.env.extendScope();
+  }
+  private outScope() {
+    this.env = this.env.outScope();
+  }
 }
