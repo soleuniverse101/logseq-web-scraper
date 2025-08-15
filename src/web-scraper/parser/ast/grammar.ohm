@@ -42,7 +42,7 @@ Refltag {
   ObjectMapping = identifier ":" Expression
   Array = "[" ListOf<Expression, ","> "]"
 
-  identifier = ~keyword<keywords> (("_" | letter) identifierPart* "!"?) ~identifierPart
+  identifier = ~keyword<keywords> (("$" | "_" | letter) identifierPart* "!"?) ~identifierPart
   keyword<k> = k ~identifierPart
   identifierPart = "_" | alnum
 

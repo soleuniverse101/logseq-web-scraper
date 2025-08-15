@@ -1,40 +1,26 @@
 import { ok } from "neverthrow";
-import { createFunction } from "../../data/functions";
-import { runtimeErr } from "../../errors/interpreter-errors";
-import { Environment } from "../environment";
-import { SourceLineContext } from "../../errors/parser-errors";
 import { wrapValue } from "../../data";
+import { createFunctionWithOptions } from "../../data/functions";
+import { Environment } from "../environment";
 
-const map = async (
-  [selector]: [string],
+export function selectElements(
   env: Environment,
-  sourceContext: SourceLineContext,
-) => {
-  const { value: current } = env.getRootElement("currentElement");
-  const selection = current.querySelector(selector);
+  selector: string,
+  maxCount?: number,
+) {
+  return Array.from(
+    env.getRootElement("currentElement").value.querySelectorAll(selector),
+  ).slice(0, maxCount);
+}
 
-  if (!selection) {
-    return runtimeErr("selectElementNotFound", { selector }, sourceContext);
-  }
-
-  return ok(selection as HTMLElement);
-};
-
-export const pureSelect = createFunction(["String"], "HtmlElement", map);
-export const impureSelect = createFunction(
+export const select = createFunctionWithOptions(
   ["String"],
-  "HtmlElement",
-  async ([selector], env, sourceContext) => {
-    const result = await map([selector], env, sourceContext);
-    if (result.isErr()) {
-      return result;
-    }
-
-    env.setRootElement(
-      "currentElement",
-      wrapValue("HtmlElement", result.value),
-    );
-
-    return result;
-  },
+  ["Number"],
+  "Array",
+  async ([selector], [count], env, _sourceContext) =>
+    ok(
+      selectElements(env, selector, count).map((element) =>
+        wrapValue("HtmlElement", element as HTMLElement),
+      ),
+    ),
 );

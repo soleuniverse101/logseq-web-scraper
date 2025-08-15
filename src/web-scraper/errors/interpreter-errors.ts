@@ -34,22 +34,25 @@ const errorMessages = {
     `Identifier '${name}' not found, make sure it's defined`,
   valueNotCallable: ({ type }: { type: ValueType }) =>
     `Value of type '${type}' is not callable`,
-  wrongArgumentsCount: ({
-    expectedCount,
-    actualCount,
-  }: {
-    expectedCount: number;
-    actualCount: number;
-  }) =>
-    `Function expected ${expectedCount} argument(s) but ${actualCount} were passed`,
+  wrongArgumentsCount: (
+    info: {
+      actualCount: number;
+    } & (
+      | { type: "precise"; expectedCount: number }
+      | { type: "interval"; minCount: number; maxCount: number }
+    ),
+  ) =>
+    `Function expected ${info.type == "precise" ? info.expectedCount : `between ${info.minCount} and ${info.maxCount}`} argument(s) but ${info.actualCount} were passed`,
   wrongArgumentsTypes: ({
     expectedTypes,
+    expectedOptionalTypes,
     actualTypes,
   }: {
     expectedTypes: ValueType[];
+    expectedOptionalTypes: ValueType[];
     actualTypes: ValueType[];
   }) =>
-    `Function expected arguments of types [${expectedTypes.join(",")}] but ${actualTypes.join(",")} were passed`,
+    `Function expected arguments of types [${(expectedTypes as string[]).concat(expectedOptionalTypes.map((type) => `(${type})`)).join(", ")}] but arguments of types [${actualTypes.join(", ")}] were passed`,
   invalidUrl: ({ url }: { url: string }) =>
     `URL '${url}' is invalid. It should be fully qualified`,
   fetchIssue: ({ url, details }: { url: string; details?: string }) =>

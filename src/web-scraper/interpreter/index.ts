@@ -8,6 +8,7 @@ import { Environment } from "./environment";
 import { applyOperation } from "./operations";
 import { loadStandardFunctions } from "./standard/standard-functions";
 import { reservedVariables } from "./standard/standard-variables";
+import { interpretSystemCall } from "./system";
 
 export type RuntimeResult<T = Value> = Promise<Result<T, RuntimeError>>;
 type ASTNodeEvaluator = {
@@ -45,36 +46,13 @@ export class Interpreter {
       if (result.isErr()) {
         return err(result.error);
       } else if (result.value.type == "SystemCall") {
-        const sysCall = result.value.value;
-
-        switch (sysCall.type) {
-          case "generateContext":
-            for (const { prepareEnv, value } of sysCall.contexts) {
-              this.extendScope();
-              prepareEnv(this.env);
-
-              const outputNode: OutputNode = {
-                value,
-                children: [],
-                context: {
-                  blockLine: this.sourceContext.blockLine,
-                  blockUUID: node.uuid,
-                },
-              };
-              output.push(outputNode);
-
-              const exec = await this.interpret(
-                node.children,
-                outputNode.children,
-              );
-              if (exec.isErr()) {
-                return exec;
-              }
-
-              this.outScope();
-            }
-            return ok();
-        }
+        await interpretSystemCall(
+          this.getHandle(),
+          output,
+          result.value.value,
+          node,
+        );
+        continue;
       }
 
       const outputNode: OutputNode = {
@@ -190,24 +168,6 @@ export class Interpreter {
         );
       }
 
-      let inputsCount;
-      if (funcResult.value.type == "StandardFunction") {
-        inputsCount = funcResult.value.value.inputTypes.length;
-      } else {
-        inputsCount = funcResult.value.value.parameters.length;
-      }
-
-      if (inputsCount != args.length) {
-        return runtimeErr(
-          "wrongArgumentsCount",
-          {
-            expectedCount: inputsCount,
-            actualCount: args.length,
-          },
-          this.sourceContext,
-        );
-      }
-
       const inputs: Value[] = [];
       for (const arg of args) {
         const result = await this.evaluate(arg);
@@ -221,7 +181,7 @@ export class Interpreter {
         const { value: func } = funcResult.value;
 
         this.env = this.env.extendScope();
-        for (let i = 0; i < inputsCount; i++) {
+        for (let i = 0; i < func.parameters.length; i++) {
           const definition = await this.env.define(
             func.parameters[i].name,
             inputs[i],
@@ -241,19 +201,6 @@ export class Interpreter {
       }
 
       const { value: func } = funcResult.value;
-
-      for (let i = 0; i < inputs.length; i++) {
-        if (inputs[i].type != func.inputTypes[i]) {
-          return runtimeErr(
-            "wrongArgumentsTypes",
-            {
-              expectedTypes: func.inputTypes,
-              actualTypes: inputs.map(({ type }) => type),
-            },
-            this.sourceContext,
-          );
-        }
-      }
 
       return func.map(inputs, this.env, this.sourceContext);
     },
@@ -284,4 +231,25 @@ export class Interpreter {
   private outScope() {
     this.env = this.env.outScope();
   }
+
+  private getHandle(): InterpreterHandle {
+    return {
+      interpret: this.interpret.bind(this),
+      extendScope: this.extendScope.bind(this),
+      outScope: this.outScope.bind(this),
+      getEnvironment: () => this.env,
+      getSourceContext: () => ({
+        blockLine: this.sourceContext.blockLine,
+        blockUUID: this.sourceContext.blockUUID,
+      }),
+    };
+  }
+}
+
+export interface InterpreterHandle {
+  interpret: (nodes: Block[], output: OutputNode[]) => RuntimeResult<void>;
+  extendScope: () => void;
+  outScope: () => void;
+  getEnvironment: () => Environment;
+  getSourceContext: () => SourceLineContext;
 }

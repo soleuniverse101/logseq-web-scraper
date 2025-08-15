@@ -1,6 +1,6 @@
 import { ASTNodeFromType } from "../parser/ast";
 import { StandardFunction } from "./functions";
-import { SystemCall } from "./system";
+import { SystemCall } from "./system-calls";
 
 export type Value = Readonly<
   | {
