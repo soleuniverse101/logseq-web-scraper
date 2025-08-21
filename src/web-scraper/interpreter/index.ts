@@ -9,6 +9,7 @@ import { applyOperation } from "./operations";
 import { loadStandardFunctions } from "./standard/standard-functions";
 import { reservedVariables } from "./standard/standard-variables";
 import { interpretSystemCall } from "./system";
+import { faillibleConvert } from "../data/conversions";
 
 export type RuntimeResult<T = Value> = Promise<Result<T, RuntimeError>>;
 type ASTNodeEvaluator = {
@@ -17,9 +18,21 @@ type ASTNodeEvaluator = {
 
 export type OutputNode = {
   value: Value;
+  content: string;
   children: OutputNode[];
   context: SourceLineContext;
 };
+
+export async function outputNode(
+  node: Omit<OutputNode, "content">,
+  sourceContext: SourceLineContext,
+): RuntimeResult<OutputNode> {
+  let content = await faillibleConvert(node.value, "String", sourceContext);
+  if (content.isErr()) {
+    return err(content.error);
+  }
+  return ok({ ...node, content: content.value.value });
+}
 
 export class Interpreter {
   private env = new Environment();
@@ -55,17 +68,26 @@ export class Interpreter {
         continue;
       }
 
-      const outputNode: OutputNode = {
-        value: result.value,
-        children: [],
-        context: {
-          blockLine: this.sourceContext.blockLine,
-          blockUUID: node.uuid,
+      const _outputNode = await outputNode(
+        {
+          value: result.value,
+          children: [],
+          context: {
+            blockLine: this.sourceContext.blockLine,
+            blockUUID: node.uuid,
+          },
         },
-      };
-      output.push(outputNode);
+        this.sourceContext,
+      );
+      if (_outputNode.isErr()) {
+        return err(_outputNode.error);
+      }
+      output.push(_outputNode.value);
 
-      const exec = await this.interpret(node.children, outputNode.children);
+      const exec = await this.interpret(
+        node.children,
+        _outputNode.value.children,
+      );
       if (exec.isErr()) {
         return exec;
       }

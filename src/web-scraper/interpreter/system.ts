@@ -10,21 +10,11 @@ export async function interpretSystemCall(
 ) {
   switch (sysCall.type) {
     case "generateContext":
-      for (const { prepareEnv, value } of sysCall.contexts) {
+      for (const { prepareEnv } of sysCall.contexts) {
         interpreter.extendScope();
         prepareEnv(interpreter.getEnvironment());
 
-        const outputNode: OutputNode = {
-          value,
-          children: [],
-          context: interpreter.getSourceContext(),
-        };
-        output.push(outputNode);
-
-        const exec = await interpreter.interpret(
-          node.children,
-          outputNode.children,
-        );
+        const exec = await interpreter.interpret(node.children, output);
         if (exec.isErr()) {
           return exec;
         }
