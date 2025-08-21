@@ -1,7 +1,8 @@
 import { err } from "neverthrow";
 import { ValueType } from "../data";
-import { SourceLineContext } from "./parser-errors";
 import { Operation } from "../interpreter/operations";
+import { SourceLineContext } from "./parser-errors";
+import { Input } from "../data/functions";
 
 export class RuntimeError extends Error {
   readonly context?: SourceLineContext;
@@ -48,11 +49,20 @@ const errorMessages = {
     expectedOptionalTypes,
     actualTypes,
   }: {
-    expectedTypes: ValueType[];
-    expectedOptionalTypes: ValueType[];
+    expectedTypes: Input[];
+    expectedOptionalTypes: Input[];
     actualTypes: ValueType[];
   }) =>
-    `Function expected arguments of types [${(expectedTypes as string[]).concat(expectedOptionalTypes.map((type) => `(${type})`)).join(", ")}] but arguments of types [${actualTypes.join(", ")}] were passed`,
+    `Function expected arguments of types [${expectedTypes
+      .map((type) => type.toString())
+.concat(
+expectedOptionalTypes
+          .map((type) => type.toString())
+.map((type) => `(${type})`),
+      )
+.join(
+", ",
+)}] but arguments of types [${actualTypes.join(", ")}] were passed`,
   invalidUrl: ({ url }: { url: string }) =>
     `URL '${url}' is invalid. It should be fully qualified`,
   fetchIssue: ({ url, details }: { url: string; details?: string }) =>
