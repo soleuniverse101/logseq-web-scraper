@@ -44,6 +44,9 @@ export function wrapValue<Type extends NonNullValueType>(
 ): ValueFromType<Type> {
   return { type, value } as ValueFromType<Type>;
 }
+export function wrapArray(...values: Value[]): ValueFromType<"Array"> {
+  return { type: "Array", value: values };
+}
 export function wrapNull(): ValueFromType<"Null"> {
   return { type: "Null", value: null };
 }
