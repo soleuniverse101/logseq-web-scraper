@@ -3,14 +3,14 @@ import { StandardFunction } from "../../data/functions";
 import { Environment } from "../environment";
 import { impureFetch, pureFetch } from "./fetch";
 import { inlineSelect, select } from "./select";
-import { selectSiblings } from "./select-siblings";
+import { impureInlineSelectSiblings } from "./select-siblings";
 
 const standardFunctions = {
   fetch: pureFetch,
   "fetch!": impureFetch,
   select,
   $select: inlineSelect,
-  selectSiblings,
+  "$selectSiblings!": impureInlineSelectSiblings,
 } as const satisfies Record<string, StandardFunction>;
 
 export function loadStandardFunctions(env: Environment) {

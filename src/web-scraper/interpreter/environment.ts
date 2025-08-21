@@ -1,6 +1,13 @@
 import { ok } from "neverthrow";
 import { RuntimeResult } from ".";
-import { Value, ValueFromType, ValueType, wrapValue } from "../data";
+import {
+  Value,
+  ValueFromType,
+  ValuesArray,
+  ValueType,
+  wrapArray,
+  wrapValue,
+} from "../data";
 import { runtimeErr } from "../errors/interpreter-errors";
 import { SourceLineContext } from "../errors/parser-errors";
 import { reservedVariables } from "./standard/standard-variables";
@@ -13,8 +20,14 @@ export type ElementInputs = Pick<HTMLElement, "textContent"> & {
 const root = {
   document: "HtmlDocument",
   currentElement: "HtmlElement",
-} as const satisfies Record<string, ValueType>;
+  siblings: wrapArray() as ValuesArray<"HtmlElement">,
+} as const satisfies Record<string, ValueType | Value>;
 type Root = typeof root;
+type RootElement<Element extends keyof Root> = Root[Element] extends ValueType
+  ? ValueFromType<Root[Element]>
+  : Root[Element] extends Value
+    ? Root[Element]
+    : never;
 const rootElements = Object.keys(root) as (keyof Root)[];
 
 export class Environment {
@@ -44,16 +57,16 @@ export class Environment {
 
   public setRootElement<Element extends keyof Root>(
     element: Element,
-    value: ValueFromType<Root[Element]>,
+    value: RootElement<Element>,
   ) {
     (this.variables.get("_")!.value as Map<string, Value>).set(element, value);
   }
   public getRootElement<Element extends keyof Root>(
     element: Element,
-  ): ValueFromType<Root[Element]> {
+  ): RootElement<Element> {
     return (this.variables.get("_")!.value as Map<string, Value>).get(
       element,
-    )! as ValueFromType<Root[Element]>;
+    )! as RootElement<Element>;
   }
 
   public async get(

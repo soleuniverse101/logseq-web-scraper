@@ -37,6 +37,10 @@ export type ValueFromType<Type extends ValueType> = Extract<
   Value,
   { type: Type }
 >;
+export type ValuesArray<Type extends ValueType> = {
+  type: "Array";
+  value: ValueFromType<Type>[];
+};
 
 export function wrapValue<Type extends NonNullValueType>(
   type: Type,
@@ -44,7 +48,9 @@ export function wrapValue<Type extends NonNullValueType>(
 ): ValueFromType<Type> {
   return { type, value } as ValueFromType<Type>;
 }
-export function wrapArray(...values: Value[]): ValueFromType<"Array"> {
+export function wrapArray<Type extends ValueType>(
+  ...values: ValueFromType<Type>[]
+): ValuesArray<Type> {
   return { type: "Array", value: values };
 }
 export function wrapNull(): ValueFromType<"Null"> {
