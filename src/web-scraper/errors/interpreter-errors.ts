@@ -76,6 +76,17 @@ const errorMessages = {
   selectElementNotFound: ({ selector }: { selector: string }) =>
     `No match found for selector ${selector}`,
   noSelectorSpecified: () => "At least one selector must be specified",
+  nonArrayIndexed: () => "Cannot index values that are not arrays",
+  nonNumberIndex: ({ type }: { type: ValueType }) =>
+    `Array index provided should be a number, instead it was ${type}`,
+  indexOutOfBounds: ({
+    index,
+    arrayLength,
+  }: {
+    index: number;
+    arrayLength: number;
+  }) =>
+    `Cannot get element of (zero-based) index ${index} from array of ${arrayLength} element(s)`,
 } as const satisfies Record<string, (info: any) => string>;
 
 export function contextlessRuntimeErr<Type extends keyof typeof errorMessages>(

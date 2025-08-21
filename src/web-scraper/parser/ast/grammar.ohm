@@ -9,11 +9,13 @@ Refltag {
   Definition = keyword<"let"> identifier "=" Expression
 
   Expression (an expression) =
+    | Indexing
     | PropertyAccess
     | FunctionCall
     | Lambda
     | Term
   
+  Indexing = Expression "[" Expression "]"
   PropertyAccess = Expression "." identifier
 
   FunctionCall =

@@ -175,6 +175,32 @@ export class Interpreter {
 
       return ok(propertyValue);
     },
+    indexing: async ({ object, index: _index }) => {
+      const array = await this.evaluate(object);
+      if (array.isErr()) {
+        return array;
+      } else if (array.value.type != "Array") {
+        return runtimeErr("nonArrayIndexed", undefined, this.sourceContext);
+      }
+      const index = await this.evaluate(_index);
+      if (index.isErr()) {
+        return index;
+      } else if (index.value.type != "Number") {
+        return runtimeErr(
+          "nonNumberIndex",
+          { type: index.value.type },
+          this.sourceContext,
+        );
+      } else if (index.value.value >= array.value.value.length) {
+        return runtimeErr(
+          "indexOutOfBounds",
+          { index: index.value.value, arrayLength: array.value.value.length },
+          this.sourceContext,
+        );
+      }
+
+      return ok(array.value.value[index.value.value]);
+    },
     functionCall: async ({ callee, args }) => {
       const funcResult = await this.evaluate(callee);
       if (funcResult.isErr()) {

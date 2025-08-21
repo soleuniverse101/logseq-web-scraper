@@ -8,6 +8,11 @@ export type ASTNode = Readonly<
       right: ASTNode;
     }
   | {
+      type: "indexing";
+      object: Expression;
+      index: Expression;
+    }
+  | {
       type: "propertyAccess";
       object: Expression;
       property: ASTNodeFromType<"identifier">;

@@ -16,6 +16,11 @@ semantics.addAttribute("asToken", {
     right: expr.asToken,
   }),
 
+  Indexing: (object, _arg1, index, _arg3): ASTNode => ({
+    type: "indexing",
+    object: object.asToken,
+    index: index.asToken,
+  }),
   PropertyAccess: (object, _arg1, property): ASTNode => ({
     type: "propertyAccess",
     object: object.asToken,
