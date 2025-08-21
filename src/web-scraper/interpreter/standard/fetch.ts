@@ -3,15 +3,10 @@ import { wrapValue } from "../../data";
 import { createFunction } from "../../data/functions";
 import { runtimeErr } from "../../errors/interpreter-errors";
 import { SourceLineContext } from "../../errors/parser-errors";
-import { Environment } from "../environment";
 
 const domParser = new DOMParser();
 
-const map = async (
-  [_url]: [string],
-  _env: Environment,
-  sourceContext: SourceLineContext,
-) => {
+async function fetchPage(_url: string, sourceContext: SourceLineContext) {
   let url;
   try {
     url = new URL(_url);
@@ -49,14 +44,18 @@ const map = async (
   }
 
   return ok(domParser.parseFromString(text.value, "text/html"));
-};
+}
 
-export const pureFetch = createFunction(["String"], "HtmlDocument", map);
+export const pureFetch = createFunction(
+  ["String"],
+  "HtmlDocument",
+  async ([url], _env, sourceContext) => await fetchPage(url, sourceContext),
+);
 export const impureFetch = createFunction(
   ["String"],
   "HtmlDocument",
-  async (inputs, env, sourceContext) => {
-    const result = await map(inputs, env, sourceContext);
+  async ([url], env, sourceContext) => {
+    const result = await fetchPage(url, sourceContext);
     if (result.isErr()) {
       return result;
     }
