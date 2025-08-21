@@ -2,8 +2,7 @@ import { wrapValue } from "../../data";
 import { StandardFunction } from "../../data/functions";
 import { Environment } from "../environment";
 import { impureFetch, pureFetch } from "./fetch";
-import { inlineSelect } from "./inline-select";
-import { select } from "./select";
+import { inlineSelect, select } from "./select";
 
 const standardFunctions = {
   fetch: pureFetch,
