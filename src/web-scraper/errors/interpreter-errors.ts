@@ -55,14 +55,14 @@ const errorMessages = {
   }) =>
     `Function expected arguments of types [${expectedTypes
       .map((type) => type.toString())
-.concat(
-expectedOptionalTypes
+      .concat(
+        expectedOptionalTypes
           .map((type) => type.toString())
-.map((type) => `(${type})`),
+          .map((type) => `(${type})`),
       )
-.join(
-", ",
-)}] but arguments of types [${actualTypes.join(", ")}] were passed`,
+      .join(
+        ", ",
+      )}] but arguments of types [${actualTypes.join(", ")}] were passed`,
   invalidUrl: ({ url }: { url: string }) =>
     `URL '${url}' is invalid. It should be fully qualified`,
   fetchIssue: ({ url, details }: { url: string; details?: string }) =>
@@ -75,6 +75,7 @@ expectedOptionalTypes
     `Accessed object property '${property}' is undefined`,
   selectElementNotFound: ({ selector }: { selector: string }) =>
     `No match found for selector ${selector}`,
+  noSelectorSpecified: () => "At least one selector must be specified",
 } as const satisfies Record<string, (info: any) => string>;
 
 export function contextlessRuntimeErr<Type extends keyof typeof errorMessages>(
