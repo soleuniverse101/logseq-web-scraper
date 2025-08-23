@@ -53,6 +53,11 @@ export function wrapArray<Type extends ValueType>(
 ): ValuesArray<Type> {
   return { type: "Array", value: values };
 }
+export function wrapObject(
+  map: Map<string, Value> = new Map(),
+): ValueFromType<"Object"> {
+  return { type: "Object", value: map };
+}
 export function wrapNull(): ValueFromType<"Null"> {
   return { type: "Null", value: null };
 }

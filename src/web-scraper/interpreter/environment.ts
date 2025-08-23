@@ -6,6 +6,7 @@ import {
   ValuesArray,
   ValueType,
   wrapArray,
+  wrapObject,
   wrapValue,
 } from "../data";
 import { runtimeErr } from "../errors/interpreter-errors";
@@ -21,6 +22,7 @@ const root = {
   document: "HtmlDocument",
   currentElement: "HtmlElement",
   siblings: wrapArray() as ValuesArray<"HtmlElement">,
+  siblingsMap: wrapObject(),
 } as const satisfies Record<string, ValueType | Value>;
 type Root = typeof root;
 type RootElement<Element extends keyof Root> = Root[Element] extends ValueType
