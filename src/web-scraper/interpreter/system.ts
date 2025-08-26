@@ -10,6 +10,18 @@ export async function interpretSystemCall(
 ) {
   switch (sysCall.type) {
     case "generateContext":
+      interpreter.extendScope();
+      sysCall.context.prepareEnv(interpreter.getEnvironment());
+
+      const exec = await interpreter.interpret(node.children, output);
+      if (exec.isErr()) {
+        return exec;
+      }
+
+      interpreter.outScope();
+
+      break;
+    case "generateContexts":
       for (const { prepareEnv } of sysCall.contexts) {
         interpreter.extendScope();
         prepareEnv(interpreter.getEnvironment());

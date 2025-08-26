@@ -37,7 +37,7 @@ export const impureInlineSelectSiblings = createFunctionWithOptions(
       .map((elements) => wrapArray(...elements));
 
     return ok(
-      sysCall("generateContext", {
+      sysCall("generateContexts", {
         contexts: siblings.map((siblings) => ({
           prepareEnv: (env) => {
             env.setRootElement("siblings", siblings);

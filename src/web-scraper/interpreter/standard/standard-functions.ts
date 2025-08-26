@@ -2,6 +2,7 @@ import { wrapValue } from "../../data";
 import { StandardFunction } from "../../data/functions";
 import { Environment } from "../environment";
 import { impureFetch, pureFetch } from "./fetch";
+import { impureInlineFocus } from "./focus";
 import { inlineSelect, select } from "./select";
 import { impureInlineSelectSiblings } from "./select-siblings";
 
@@ -11,6 +12,7 @@ const standardFunctions = {
   select,
   $select: inlineSelect,
   "$selectSiblings!": impureInlineSelectSiblings,
+  "$focus!": impureInlineFocus,
 } as const satisfies Record<string, StandardFunction>;
 
 export function loadStandardFunctions(env: Environment) {

@@ -32,7 +32,7 @@ export const inlineSelect = createFunctionWithOptions(
   "SystemCall",
   async ([selector], [count], env, _sourceContext) =>
     ok(
-      sysCall("generateContext", {
+      sysCall("generateContexts", {
         contexts: selectElements(env, selector, count).map((element) => {
           const elementValue = wrapValue("HtmlElement", element);
           return {
