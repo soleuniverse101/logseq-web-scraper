@@ -1,0 +1,9 @@
+Refltag {
+  Root = url
+  
+  url = nonWhitespace+ // Check at parsing function
+  
+  space :=  ~"\n" whitespace // Inline whitespace
+  nonWhitespace = ~whitespace any
+  whitespace = " " | "\t" | "\n" | "\r"
+}
