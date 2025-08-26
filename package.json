@@ -7,6 +7,7 @@
     "build": "vite build",
     "dev": "vite",
     "dev-logseq": "vite build --watch",
+    "build-parser": "ohm generateBundles -e --withTypes src/**/*.ohm",
     "format": "prettier -w ."
   },
   "keywords": [],
@@ -18,7 +19,7 @@
     "@types/gapi": "^0.0.47",
     "@types/gapi.client.youtube-v3": "^0.0.4",
     "prettier": "3.6.2",
-    "vite": "^6.1.1"
+    "vite": "^6.3.5"
   },
   "release": {
     "branches": [
@@ -39,5 +40,9 @@
     "title": "Logseq Web Scraper",
     "icon": "icon.png",
     "id": "_990n9u6uw"
+  },
+  "dependencies": {
+    "neverthrow": "^8.2.0",
+    "ohm-js": "^17.2.1"
   }
 }
