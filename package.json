@@ -16,6 +16,7 @@
   "description": "",
   "devDependencies": {
     "@logseq/libs": "^0.0.17",
+    "@ohm-js/cli": "^2.0.1",
     "@types/gapi": "^0.0.47",
     "@types/gapi.client.youtube-v3": "^0.0.4",
     "prettier": "3.6.2",
