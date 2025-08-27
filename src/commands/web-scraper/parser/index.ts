@@ -13,8 +13,8 @@ export class Parser {
     this.result = rootBlocks as unknown as Block[];
   }
 
-  private parseBlock(block: Block): Result<void, ParserError> {
-    const astNode = parseASTNode(block.content);
+  private parseBlock(block: Block, root = false): Result<void, ParserError> {
+    const astNode = parseASTNode(block.content, root ? "Root" : "Block");
 
     if (astNode.isErr()) {
       return astParsingErr(astNode.error, {
@@ -40,7 +40,7 @@ export class Parser {
     const parser = new Parser(rootBlocks);
 
     for (const block of parser.result) {
-      const result = parser.parseBlock(block);
+      const result = parser.parseBlock(block, true);
       if (result.isErr()) {
         return err(result.error);
       }

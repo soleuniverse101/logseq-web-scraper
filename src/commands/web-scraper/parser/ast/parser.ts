@@ -20,8 +20,11 @@ semantics.addAttribute("asToken", {
   },
 });
 
-export function parseASTNode(line: string): ASTResult {
-  const match = grammar.match(line);
+export function parseASTNode(
+line: string,
+  startRule: "Block" | "Root" = "Block",
+): ASTResult {
+  const match = grammar.match(line, startRule);
   if (match.failed()) {
     return astErr(match);
   }
