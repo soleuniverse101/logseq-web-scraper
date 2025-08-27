@@ -12,7 +12,14 @@ import {
 } from 'ohm-js';
 
 export interface RefltagActionDict<T> extends BaseActionDict<T> {
+  Block?: (this: NonterminalNode, arg0: IterationNode, arg1: IterationNode, arg2: NonterminalNode) => T;
   Root?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  Quantifier?: (this: NonterminalNode, arg0: TerminalNode, arg1: TerminalNode) => T;
+  Modes?: (this: NonterminalNode, arg0: IterationNode, arg1: TerminalNode) => T;
+  mode?: (this: NonterminalNode, arg0: TerminalNode, arg1: IterationNode) => T;
+  keyword?: (this: NonterminalNode, arg0: Node) => T;
+  identifierPart?: (this: NonterminalNode, arg0: NonterminalNode | TerminalNode) => T;
+  selector?: (this: NonterminalNode, arg0: IterationNode) => T;
   url?: (this: NonterminalNode, arg0: IterationNode) => T;
   space?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   nonWhitespace?: (this: NonterminalNode, arg0: NonterminalNode) => T;

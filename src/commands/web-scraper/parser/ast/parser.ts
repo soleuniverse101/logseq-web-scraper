@@ -1,4 +1,4 @@
-import { ASTNode } from ".";
+import { ASTNode, Mode } from ".";
 import { err, ok, Result } from "neverthrow";
 import grammar from "./grammar.ohm-bundle";
 import { astErr, AstError } from "../../errors/parser-errors";
@@ -8,7 +8,23 @@ type ASTResult = Result<ASTNode, AstError>;
 const semantics = grammar.createSemantics();
 
 semantics.addAttribute("asToken", {
-  url: (_url): ASTResult => {
+  Block: (quantifier, modes, selector): ASTResult =>
+    ok({
+      type: "block",
+      selector: selector.sourceString,
+      quantifier:
+        quantifier.numChildren > 0
+          ? (quantifier.children[0].children[0].sourceString as "?" | "+" | "*")
+          : undefined,
+      modes:
+        modes.numChildren > 0
+          ? modes.children[0].children[0]
+              .asIteration()
+              .children.map((mode) => mode.children[1].sourceString as Mode)
+          : [],
+    }),
+
+  Root: (_url): ASTResult => {
     try {
       return ok({
         type: "root",
@@ -21,7 +37,7 @@ semantics.addAttribute("asToken", {
 });
 
 export function parseASTNode(
-line: string,
+  line: string,
   startRule: "Block" | "Root" = "Block",
 ): ASTResult {
   const match = grammar.match(line, startRule);

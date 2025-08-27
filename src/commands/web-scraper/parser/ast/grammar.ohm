@@ -1,6 +1,14 @@
 Refltag {
+  Block = Quantifier? Modes? selector
   Root = url
+
+  Quantifier = ("?" | "+" | "*") ","
+  Modes =  mode+ ","
+  mode = "@" identifierPart+ ~"@"
   
+  identifierPart = "_" | alnum
+
+  selector = nonWhitespace+
   url = nonWhitespace+ // Check at parsing function
   
   space :=  ~"\n" whitespace // Inline whitespace
