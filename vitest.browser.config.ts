@@ -6,7 +6,14 @@ export default defineConfig({
       enabled: true,
       provider: "playwright",
       // https://vitest.dev/guide/browser/playwright
-      instances: [{ browser: "chromium" }],
+      instances: [
+        {
+          browser: "chromium",
+          // Cors interfered with fetching pages
+          context: { bypassCSP: true },
+          launch: { args: ["--disable-web-security"] },
+        },
+      ],
       // Browser env is only needed for DOM-related functions
       headless: true,
       screenshotFailures: false,

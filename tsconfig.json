@@ -22,5 +22,5 @@
 
     "types": ["@vitest/browser/providers/playwright"]
   },
-  "include": ["src"]
+  "include": ["src", "vitest.browser.config.ts"]
 }
