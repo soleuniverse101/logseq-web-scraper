@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { parseTestBlocks } from ".";
+import { parseTestBlocks } from "./test-utils";
 
 describe("parseTestBlock", () => {
   test("simple", () => {

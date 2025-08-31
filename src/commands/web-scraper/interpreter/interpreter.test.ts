@@ -1,18 +1,12 @@
-import { describe, expect, test } from "vitest";
-import { Interpreter } from ".";
-import { Parser } from "../parser";
-import { parseTestBlocks } from "../test";
 import { ok } from "neverthrow";
+import { describe, expect, test } from "vitest";
+import { testInterpret } from "../test/test-utils";
 
 describe("interpreter (full integration)", () => {
   test("simple fetch + block", async () => {
     expect(
-      await Interpreter.interpret(
-        Parser.parse(
-          parseTestBlocks(
-            "https://mrrobot.fandom.com/wiki/Mr._Robot\n  .mw-page-title-main",
-          ),
-        )._unsafeUnwrap(),
+      await testInterpret(
+        "https://mrrobot.fandom.com/wiki/Mr._Robot\n  .mw-page-title-main",
       ),
     ).toMatchObject(
       ok([

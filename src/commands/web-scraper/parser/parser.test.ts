@@ -1,17 +1,14 @@
+import { err, ok } from "neverthrow";
 import { describe, expect, test } from "vitest";
-import { Parser } from ".";
-import { parseTestBlock } from "../test";
-import { ok } from "neverthrow";
+import { testParse } from "../test/test-utils";
 
 describe("Parser", () => {
   test("simple", () => {
-    expect(
-      Parser.parse(parseTestBlock("test"))._unsafeUnwrapErr(),
-    ).toMatchObject({ message: "Parsing failed on line 1 :\nInvalid URL" });
+    expect(testParse("test")).toMatchObject(
+      err({ message: "Parsing failed on line 1 :\nInvalid URL" }),
+    );
 
-    expect(
-      Parser.parse(parseTestBlock("https://soleuniverse.me")),
-    ).toMatchObject(
+    expect(testParse("https://soleuniverse.me")).toMatchObject(
       ok([
         {
           content: "https://soleuniverse.me",
@@ -25,12 +22,10 @@ describe("Parser", () => {
     );
 
     expect(
-      Parser.parse(
-        parseTestBlock(`https://soleuniverse.me
+      testParse(`https://soleuniverse.me
   h1
   +, ul
     @inline, li.class`),
-      ),
     ).toMatchObject(
       ok([
         {
