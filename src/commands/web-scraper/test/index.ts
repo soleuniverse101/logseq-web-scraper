@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 
 const INDENT_LEVEL = 2;
 
-export function parseTestBlock(src: string): RawBlock[] {
+export function parseTestBlocks(src: string): RawBlock[] {
   const blocks: RawBlock[] = [];
   let indent = 0;
 

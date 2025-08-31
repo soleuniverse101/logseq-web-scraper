@@ -1,16 +1,16 @@
 import { describe, expect, test } from "vitest";
-import { parseTestBlock } from ".";
+import { parseTestBlocks } from ".";
 
 describe("parseTestBlock", () => {
   test("simple", () => {
-    expect(parseTestBlock("test")).toMatchObject([
+    expect(parseTestBlocks("test")).toMatchObject([
       {
         content: "test",
         children: [],
       },
     ]);
 
-    expect(parseTestBlock("test1\n\ntest2")).toMatchObject([
+    expect(parseTestBlocks("test1\n\ntest2")).toMatchObject([
       {
         content: "test1",
         children: [],
@@ -27,14 +27,14 @@ describe("parseTestBlock", () => {
   });
 
   test("nested", () => {
-    expect(parseTestBlock("test\n  nested")).toMatchObject([
+    expect(parseTestBlocks("test\n  nested")).toMatchObject([
       {
         content: "test",
         children: [{ content: "nested", children: [] }],
       },
     ]);
 
-    expect(parseTestBlock("test\n  nested\n  nested2")).toMatchObject([
+    expect(parseTestBlocks("test\n  nested\n  nested2")).toMatchObject([
       {
         content: "test",
         children: [

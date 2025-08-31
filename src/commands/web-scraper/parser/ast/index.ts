@@ -9,3 +9,9 @@ export type ASTNode = Readonly<
 >;
 
 export type Mode = "inline" | "block";
+
+export type ASTNodeType = ASTNode["type"];
+export type ASTNodeFromType<Type extends ASTNodeType> = Extract<
+  ASTNode,
+  { type: Type }
+>;
