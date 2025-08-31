@@ -1,7 +1,7 @@
 import { err, ok, Result } from "neverthrow";
 import { Value, wrapValue } from "../data";
 import { SourceLineContext } from "../errors/parser-errors";
-import { RuntimeError } from "../errors/runtime-errors";
+import { runtimeErr, RuntimeError } from "../errors/runtime-errors";
 import { ASTNode, ASTNodeFromType, ASTNodeType } from "../parser/ast";
 import { Block } from "../parser/blocks";
 import { Environment } from "./environment";
@@ -31,10 +31,6 @@ export class Interpreter {
   private sourceContext: SourceLineContext = {
     blockLine: 0,
   } as SourceLineContext;
-
-  private constructor() {
-    this.env.loadReserved("_", wrapValue("Object", new Map()));
-  }
 
   private async interpret(
     nodes: Block[],
@@ -77,11 +73,28 @@ export class Interpreter {
   }
 
   private evaluator: ASTNodeEvaluator = {
+block: async ({ selector }) => {
+      const element = this.env
+        .getReserved("_document")
+        .body.querySelector(selector);
+
+      if (!element) {
+        return runtimeErr(
+          "selectElementNotFound",
+          { selector },
+          this.currentContext(),
+        );
+      }
+
+      return ok(element.textContent);
+    },
+
     root: async ({ url }) => {
       const page = await fetchPage(url, this.currentContext());
       if (page.isErr()) {
-        return page;
+        return err(page.error);
       }
+this.env.loadReserved("_document", wrapValue("HtmlDocument", page.value));
       return ok(page.value.title);
     },
   } as const;

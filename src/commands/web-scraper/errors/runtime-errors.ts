@@ -1,5 +1,4 @@
 import { err } from "neverthrow";
-import { ValueType } from "../data";
 import { SourceLineContext } from "./parser-errors";
 
 export type RuntimeContext = SourceLineContext;
@@ -17,10 +16,16 @@ export class RuntimeError extends Error {
 }
 
 const errorMessages = {
+  reservedIdentifier: ({ name }: { name: string }) =>
+    `Identifier '${name}' is reserved`,
+  identifierNotFound: ({ name }: { name: string }) =>
+    `Identifier '${name}' not found, make sure it's defined`,
   invalidUrl: ({ url }: { url: string }) =>
     `URL '${url}' is invalid. It should be fully qualified`,
   fetchIssue: ({ url, details }: { url: string; details?: string }) =>
     `Failed fetching '${url}'` + (details ? ` (${details})` : ""),
+  selectElementNotFound: ({ selector }: { selector: string }) =>
+    `No match found for selector ${selector}`,
 } as const satisfies Record<string, (info: any) => string>;
 
 export function contextlessRuntimeErr<Type extends keyof typeof errorMessages>(

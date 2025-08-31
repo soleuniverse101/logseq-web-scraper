@@ -1,60 +1,47 @@
 import { ok } from "neverthrow";
 import { RuntimeResult } from ".";
-import {
-  Value,
-  ValueFromType,
-  ValueType,
-  wrapValue,
-} from "../data";
+import { Value } from "../data";
 import { SourceLineContext } from "../errors/parser-errors";
 import { runtimeErr } from "../errors/runtime-errors";
-
-const root = {
-  document: "HtmlDocument",
-  currentElement: "HtmlElement",
-} as const satisfies Record<string, ValueType | Value>;
-type Root = typeof root;
-type RootElement<Element extends keyof Root> = Root[Element] extends ValueType
-  ? ValueFromType<Root[Element]>
-  : Root[Element] extends Value
-    ? Root[Element]
-    : never;
-const rootElements = Object.keys(root) as (keyof Root)[];
+import { ReservedKey, reservedKeys, ReservedType } from "./reserved";
 
 export class Environment {
   private readonly variables: Map<String, Value> = new Map();
   private parent: Environment | null = null;
-  private reserved: Set<string> = new Set();
 
   public async define(
     name: string,
     value: Value,
     sourceContext: SourceLineContext,
   ): RuntimeResult<void> {
-    return this.loadReserved(name, value);
+    if (reservedKeys.includes(name)) {
+      return runtimeErr("reservedIdentifier", { name }, sourceContext);
+    }
+    return this.load(name, value);
   }
 
   /**
    * Like define but without any guard (used to load stuff directly from the interpreter)
    */
-  public async loadReserved(name: string, value: Value): RuntimeResult<void> {
+  public async load(name: string, value: Value): RuntimeResult<void> {
     this.variables.set(name, value);
-    this.reserved.add(name);
     return ok();
   }
 
-  public setRootElement<Element extends keyof Root>(
-    element: Element,
-    value: RootElement<Element>,
+  public loadReserved<Key extends ReservedKey>(
+    element: Key,
+    value: ReservedType<Key>,
   ) {
-    (this.variables.get("_")!.value as Map<string, Value>).set(element, value);
+    this.variables.set(element, value);
   }
-  public getRootElement<Element extends keyof Root>(
-    element: Element,
-  ): RootElement<Element> {
-    return (this.variables.get("_")!.value as Map<string, Value>).get(
-      element,
-    )! as RootElement<Element>;
+  public getReserved<Key extends ReservedKey>(
+    element: Key,
+  ): ReservedType<Key>["value"] {
+    const value = this.variables.get(element);
+    if (!value) {
+      throw new Error("Reserved value not defined");
+    }
+    return value.value as ReservedType<Key>["value"];
   }
 
   public async get(
@@ -71,18 +58,18 @@ export class Environment {
       env = env.parent;
     }
 
-    return runtimeErr("IdentifierNotFound", { name }, sourceContext);
+    return runtimeErr("identifierNotFound", { name }, sourceContext);
   }
 
   public extendScope() {
     let env = new Environment();
     env.parent = this;
 
-    // Shallow copy root
-    const rootMap = new Map();
-    env.loadReserved("_", wrapValue("Object", rootMap));
-    for (const rootElement of rootElements) {
-      rootMap.set(rootElement, this.getRootElement(rootElement));
+    for (const key of reservedKeys) {
+      const value = this.variables.get(key);
+      if (value) {
+        env.load(key, value);
+      }
     }
 
     return env;
