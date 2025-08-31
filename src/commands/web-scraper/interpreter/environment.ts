@@ -1,9 +1,15 @@
 import { ok } from "neverthrow";
 import { RuntimeResult } from ".";
-import { Value } from "../data";
+import { Value, wrapValue } from "../data";
 import { SourceLineContext } from "../errors/parser-errors";
 import { runtimeErr } from "../errors/runtime-errors";
-import { ReservedKey, reservedKeys, ReservedType } from "./reserved";
+import {
+  Reserved,
+  reserved,
+  ReservedKey,
+  reservedKeys,
+  ReservedType,
+} from "./reserved";
 
 export class Environment {
   private readonly variables: Map<String, Value> = new Map();
@@ -30,9 +36,12 @@ export class Environment {
 
   public loadReserved<Key extends ReservedKey>(
     element: Key,
-    value: ReservedType<Key>,
+    rawValue: ReservedType<Key>["value"],
   ) {
-    this.variables.set(element, value);
+    this.variables.set(
+      element,
+      wrapValue<Reserved[Key]>(reserved[element], rawValue as any),
+    );
   }
   public getReserved<Key extends ReservedKey>(
     element: Key,

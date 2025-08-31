@@ -17,4 +17,25 @@ describe("interpreter (full integration)", () => {
       ]),
     );
   });
+
+  test("nesting", async () => {
+    expect(
+      await testInterpret(
+        `https://en.wikipedia.org/wiki/The_Pet_Girl_of_Sakurasou
+  @inline, dl:nth-of-type(6)
+    dt
+    dt span[lang="ja"]`,
+      ),
+    ).toMatchObject(
+      ok([
+        {
+          content: "The Pet Girl of Sakurasou - Wikipedia",
+          children: [
+            { content: "Ryūnosuke Akasaka" },
+            { content: "赤坂 龍之介" },
+          ],
+        },
+      ]),
+    );
+  });
 });

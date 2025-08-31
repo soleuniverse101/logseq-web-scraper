@@ -16,7 +16,6 @@ describe("Parser", () => {
             type: "root",
             url: new URL("https://soleuniverse.me"),
           },
-          children: [],
         },
       ]),
     );
@@ -40,16 +39,13 @@ describe("Parser", () => {
               astNode: {
                 type: "block",
                 selector: "h1",
-                modes: [],
               },
-              children: [],
             },
             {
               content: "+, ul",
               astNode: {
                 type: "block",
                 selector: "ul",
-                modes: [],
                 quantifier: "+",
               },
               children: [
@@ -58,9 +54,8 @@ describe("Parser", () => {
                   astNode: {
                     type: "block",
                     selector: "li.class",
-                    modes: ["inline"],
+                    modes: { context: "inline" },
                   },
-                  children: [],
                 },
               ],
             },

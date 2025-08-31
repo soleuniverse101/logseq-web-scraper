@@ -40,3 +40,10 @@ export async function fetchPage(
 
   return ok(domParser.parseFromString(text.value, "text/html"));
 }
+
+export function elementText(element: HTMLElement): string {
+  return Array.from(element.childNodes).reduce(
+    (a, b) => a + (b.nodeType === 3 ? b.textContent : ""),
+    "",
+  );
+}

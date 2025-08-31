@@ -1,3 +1,5 @@
+import { Contexts } from "../interpreter/context";
+
 export type Value = Readonly<
   // | {
   //     type: "UserFunction";
@@ -7,6 +9,7 @@ export type Value = Readonly<
   //     type: "StandardFunction";
   //     value: StandardFunction;
   //   }
+  | { type: "Contexts"; value: Contexts }
   | { type: "Object"; value: Map<string, Value> }
   | { type: "Array"; value: Value[] }
   | {

@@ -8,7 +8,7 @@ Refltag {
   
   identifierPart = "_" | alnum
 
-  selector = nonWhitespace+
+  selector = (~"\n" any)+
   url = nonWhitespace+ // Check at parsing function
   
   space :=  ~"\n" whitespace // Inline whitespace

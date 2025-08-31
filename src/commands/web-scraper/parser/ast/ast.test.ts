@@ -10,7 +10,7 @@ describe("parseASTNode", () => {
         type: "block",
         selector: "selector",
         quantifier: "?",
-        modes: ["inline"],
+        modes: { context: "inline" },
       } satisfies ASTNode),
     );
   });
