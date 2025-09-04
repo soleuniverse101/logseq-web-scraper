@@ -1,4 +1,5 @@
 import { err } from "neverthrow";
+import { ValueType } from "../data";
 import { SourceLineContext } from "./parser-errors";
 
 export type RuntimeContext = SourceLineContext;
@@ -24,6 +25,8 @@ const errorMessages = {
     `URL '${url}' is invalid. It should be fully qualified`,
   fetchIssue: ({ url, details }: { url: string; details?: string }) =>
     `Failed fetching '${url}'` + (details ? ` (${details})` : ""),
+  nonStringTemplateExpression: ({ actualType }: { actualType: ValueType }) =>
+    `Expressions in block templates must evaluate to type String, however it evaluated to ${actualType}`,
   selectElementNotFound: ({ selector }: { selector: string }) =>
     `No match found for selector ${selector}`,
 } as const satisfies Record<string, (info: any) => string>;

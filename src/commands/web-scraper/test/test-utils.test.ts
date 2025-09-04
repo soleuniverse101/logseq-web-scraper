@@ -44,4 +44,22 @@ describe("parseTestBlock", () => {
       },
     ]);
   });
+
+  test("multiline", () => {
+    expect(parseTestBlocks("test\n newline")).toMatchObject([
+      {
+        content: "test\nnewline",
+        children: [],
+      },
+    ]);
+
+    expect(
+      parseTestBlocks("test\n newline\n  nested\n   newline2"),
+    ).toMatchObject([
+      {
+        content: "test\nnewline",
+        children: [{ content: "nested\nnewline2", children: [] }],
+      },
+    ]);
+  });
 });

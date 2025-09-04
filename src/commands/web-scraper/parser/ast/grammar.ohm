@@ -1,15 +1,39 @@
 Refltag {
-  Block = Quantifier? Modes? selector
-  Root = url
+  Block = Quantifier? Modes? selector Template?
+  Root = url Template?
+
+  Template = "\n" (#(templateText) | TemplateEscape)*
+  templateText = (~("{" | "}") any)+
+  TemplateEscape = "{" Expression? "}"
 
   Quantifier = ("?" | "+" | "*") ","
   Modes =  mode+ ","
   mode = "@" identifierPart+ ~"@"
-  
+
+  Expression (an expression) =
+    | Term
+
+  Term =
+    | Term ("+" | "-") Factor -- binary
+    | Factor
+  Factor =
+    | Factor ("*" | "/") Primary -- binary
+    | Primary
+
+  Primary =
+    | "(" Expression ")" -- parenthesized
+    | identifier
+    | literal
+    
+  identifier = /* ~keyword<keywords> */ letter identifierPart* ~identifierPart
   identifierPart = "_" | alnum
 
   selector = (~"\n" any)+
   url = nonWhitespace+ // Check at parsing function
+
+  literal = number | string
+  number = digit+
+  string = "\"" (~"\"" ("\\\"" | any))* "\""
   
   space :=  ~"\n" whitespace // Inline whitespace
   nonWhitespace = ~whitespace any

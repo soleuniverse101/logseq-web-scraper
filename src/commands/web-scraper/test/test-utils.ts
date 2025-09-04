@@ -5,15 +5,12 @@ import { Parser } from "../parser";
 
 export function parseTestBlocks(src: string, indentLevel = 2): RawBlock[] {
   function getIndent(line: string) {
-    let indent = 0;
-    for (const c of line) {
-      if (c == " ") {
-        indent++;
-      } else {
-        return indent;
+    for (let i = 0; i < line.length; i++) {
+      if (line[i] != " ") {
+        return i;
       }
     }
-    return indent;
+    return line.length;
   }
 
   function testBlock(content: string, children: RawBlock[] = []): RawBlock {
@@ -24,19 +21,23 @@ export function parseTestBlocks(src: string, indentLevel = 2): RawBlock[] {
     };
   }
 
+  const rawLines = src.split("\n").map((line) => {
+    const indent = getIndent(line);
+    return [indent, line.substring(indent)] as const;
+  });
   const blocks: RawBlock[] = [];
   let indent = 0;
 
-  for (const line of src.split("\n")) {
-    const lineIndent = getIndent(line);
+  for (let i = 0; i < rawLines.length; i++) {
+    const [lineIndent, line] = rawLines[i];
 
     if (lineIndent % indentLevel != 0) {
-      throw new Error(`Indents must be done with ${indentLevel} spaces`);
+      throw new Error(
+        `Indents must be done with ${indentLevel} spaces and new lines of a block must follow directly after it with 1 space of indent`,
+      );
     } else if (lineIndent > indent + indentLevel) {
       throw new Error("Cannot indent more than once at a time");
     }
-
-    const block = testBlock(line.substring(lineIndent));
 
     if (lineIndent < indent) {
       indent = lineIndent;
@@ -48,9 +49,15 @@ export function parseTestBlocks(src: string, indentLevel = 2): RawBlock[] {
       scope = scope[scope.length - 1].children;
     }
 
+    const block = testBlock(line);
+
     scope.push(block);
     if (lineIndent > indent) {
-      indent += indentLevel;
+      indent = indentLevel;
+    }
+
+    while (i + 1 < rawLines.length && rawLines[i + 1][0] == lineIndent + 1) {
+      block.content += `\n${rawLines[++i][1]}`;
     }
   }
 
@@ -62,7 +69,9 @@ export function testParse(src: string) {
 }
 
 export function testInterpret(src: string) {
-  return Interpreter.interpret(
-    Parser.parse(parseTestBlocks(src))._unsafeUnwrap(),
-  );
+  const parsed = Parser.parse(parseTestBlocks(src));
+  if (parsed.isErr()) {
+    throw parsed.error;
+  }
+  return Interpreter.interpret(parsed.value);
 }

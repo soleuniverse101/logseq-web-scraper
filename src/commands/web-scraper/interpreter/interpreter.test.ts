@@ -38,4 +38,23 @@ describe("interpreter (full integration)", () => {
       ]),
     );
   });
+
+  test("templates", async () => {
+    expect(
+      await testInterpret(
+        `https://en.wikipedia.org/wiki/I_Made_Friends_with_the_Second_Prettiest_Girl_in_My_Class
+ Title is '{}'
+  dt:nth-of-type(2)
+   Best girl is {}`,
+      ),
+    ).toMatchObject(
+      ok([
+        {
+          content:
+            "Title is 'I Made Friends with the Second Prettiest Girl in My Class - Wikipedia'",
+          children: [{ content: "Best girl is Umi Asanagi" }],
+        },
+      ]),
+    );
+  });
 });

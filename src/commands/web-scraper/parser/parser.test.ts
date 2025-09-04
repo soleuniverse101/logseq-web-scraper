@@ -5,7 +5,7 @@ import { testParse } from "../test/test-utils";
 describe("Parser", () => {
   test("simple", () => {
     expect(testParse("test")).toMatchObject(
-      err({ message: "Parsing failed on line 1 :\nInvalid URL" }),
+      err({ message: "Parsing failed on line 1 :\nInvalid URL : test" }),
     );
 
     expect(testParse("https://soleuniverse.me")).toMatchObject(
