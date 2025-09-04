@@ -56,5 +56,19 @@ describe("interpreter (full integration)", () => {
         },
       ]),
     );
+
+    expect(
+      await testInterpret(
+        `https://jaku-chara-tomozaki-kun.fandom.com/wiki/Fumiya_Tomozaki
+  [title="Atafami"]
+   [{}]({href})`,
+      ),
+    ).toMatchObject(
+      ok([
+        {
+          children: [{ content: "[Attack Families](/wiki/Atafami)" }],
+        },
+      ]),
+    );
   });
 });

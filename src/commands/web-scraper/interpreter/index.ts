@@ -1,5 +1,5 @@
 import { err, ok, Result } from "neverthrow";
-import { Value, ValueFromType, wrapValue } from "../data";
+import { Value, ValueFromType, wrapNullable, wrapValue } from "../data";
 import { SourceLineContext } from "../errors/parser-errors";
 import { runtimeErr, RuntimeError } from "../errors/runtime-errors";
 import {
@@ -106,10 +106,13 @@ export class Interpreter {
         return ok(
           context((env) => {
             env.loadReserved("_current", element);
+            this.loadElementTemplateData(element);
           }),
         );
       }
 
+      this.env.loadReserved("_current", element);
+      this.loadElementTemplateData(element);
       return this.interpretTemplate(template, elementText(element));
     },
 
@@ -118,8 +121,10 @@ export class Interpreter {
       if (page.isErr()) {
         return err(page.error);
       }
+
       this.env.loadReserved("_document", page.value);
       this.env.loadReserved("_current", page.value.body);
+      this.loadElementTemplateData(page.value.body);
 
       return this.interpretTemplate(template, page.value.title);
     },
@@ -154,6 +159,16 @@ export class Interpreter {
     }
 
     return ok(wrapValue("String", output));
+  }
+
+  private loadElementTemplateData(element: HTMLElement) {
+    const tagName = element.tagName.toLowerCase();
+    if (tagName == "a") {
+      this.env.load(
+        "href",
+        wrapNullable("String", element.getAttribute("href")),
+      );
+    }
   }
 
   private extendScope() {
