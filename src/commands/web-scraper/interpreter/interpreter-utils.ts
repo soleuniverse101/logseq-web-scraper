@@ -3,8 +3,6 @@ import { SourceLineContext } from "../errors/parser-errors";
 import { runtimeErr } from "../errors/runtime-errors";
 import { RuntimeResult } from ".";
 
-const domParser = new DOMParser();
-
 export async function fetchPage(
   url: URL,
   sourceContext: SourceLineContext,
@@ -38,7 +36,7 @@ export async function fetchPage(
     return text.error;
   }
 
-  return ok(domParser.parseFromString(text.value, "text/html"));
+  return ok(Document.parseHTMLUnsafe(text.value));
 }
 
 export function elementText(element: HTMLElement): string {
