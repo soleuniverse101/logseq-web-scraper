@@ -123,6 +123,7 @@ export class Interpreter {
       }
 
       this.env.loadReserved("_document", page.value);
+      this.env.loadReserved("_documentUrl", url.toString());
       this.env.loadReserved("_current", page.value.body);
       this.loadElementTemplateData(page.value.body);
 
@@ -164,9 +165,19 @@ export class Interpreter {
   private loadElementTemplateData(element: HTMLElement) {
     const tagName = element.tagName.toLowerCase();
     if (tagName == "a") {
+      const href = element.getAttribute("href");
+      this.env.load("href", wrapNullable("String", href));
       this.env.load(
-        "href",
-        wrapNullable("String", element.getAttribute("href")),
+        "fullHref",
+        wrapNullable(
+          "String",
+          href
+            ? (URL.parse(
+                href,
+                this.env.getReserved("_documentUrl"),
+              )?.toString() ?? null)
+            : null,
+        ),
       );
     }
   }

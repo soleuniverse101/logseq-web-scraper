@@ -2,6 +2,7 @@ import { ValueFromType, ValueType } from "../data";
 
 export const reserved = {
   _document: "HtmlDocument",
+  _documentUrl: "String",
   _current: "HtmlElement",
 } as const satisfies Record<string, ValueType>;
 

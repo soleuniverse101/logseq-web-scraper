@@ -61,12 +61,17 @@ describe("interpreter (full integration)", () => {
       await testInterpret(
         `https://jaku-chara-tomozaki-kun.fandom.com/wiki/Fumiya_Tomozaki
   [title="Atafami"]
-   [{}]({href})`,
+   [{}]({fullHref})`,
       ),
     ).toMatchObject(
       ok([
         {
-          children: [{ content: "[Attack Families](/wiki/Atafami)" }],
+          children: [
+            {
+              content:
+                "[Attack Families](https://jaku-chara-tomozaki-kun.fandom.com/wiki/Atafami)",
+            },
+          ],
         },
       ]),
     );
