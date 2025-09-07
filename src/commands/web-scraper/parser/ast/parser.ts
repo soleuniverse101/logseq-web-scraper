@@ -35,17 +35,10 @@ const tokens = {
       template: parseTemplate(template),
     }),
 
-  Root: (_url, template) => {
-    let url;
-    try {
-      url = new URL(_url.sourceString);
-    } catch {
-      return err(
-        new AstError(
-          `Invalid URL : ${_url.sourceString}`,
-          _url.source.startIdx,
-        ),
-      );
+  Root: ({ sourceString: _url, source: urlSource }, template) => {
+    const url = URL.parse(_url);
+    if (!url) {
+      return err(new AstError(`Invalid URL : ${_url}`, urlSource.startIdx));
     }
     return ok({
       type: "root",
