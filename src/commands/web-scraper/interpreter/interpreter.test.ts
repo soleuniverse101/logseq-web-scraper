@@ -3,6 +3,18 @@ import { describe, expect, test } from "vitest";
 import { testInterpret } from "../test/test-utils";
 
 describe("interpreter (full integration)", () => {
+  test("simple fetch", async () => {
+    expect(
+      await testInterpret("https://en.wikipedia.org/wiki/Dexter_(TV_series)"),
+    ).toMatchObject(
+      ok([
+        {
+          content: "Dexter (TV series) - Wikipedia",
+        },
+      ]),
+    );
+  });
+
   test("simple fetch + block", async () => {
     expect(
       await testInterpret(
@@ -53,6 +65,48 @@ describe("interpreter (full integration)", () => {
           content:
             "Title is 'I Made Friends with the Second Prettiest Girl in My Class - Wikipedia'",
           children: [{ content: "Best girl is Umi Asanagi" }],
+        },
+      ]),
+    );
+
+    expect(
+      await testInterpret(
+        `https://jaku-chara-tomozaki-kun.fandom.com/wiki/Fumiya_Tomozaki
+  [title="Atafami"]
+   [{}]({fullHref})`,
+      ),
+    ).toMatchObject(
+      ok([
+        {
+          children: [
+            {
+              content:
+                "[Attack Families](https://jaku-chara-tomozaki-kun.fandom.com/wiki/Atafami)",
+            },
+          ],
+        },
+      ]),
+    );
+  });
+
+  test("quantifiers", async () => {
+    expect(
+      await testInterpret(
+        `https://fr.wikipedia.org/wiki/Dr._Stone
+  @inline, #mw-content-text > div.mw-content-ltr.mw-parser-output > table:nth-child(70) > tbody > tr:nth-child(1)
+    +, th`,
+      ),
+    ).toMatchObject(
+      ok([
+        {
+          children: [
+            {
+              content: "Début",
+            },
+            {
+              content: "Fin\n",
+            },
+          ],
         },
       ]),
     );
