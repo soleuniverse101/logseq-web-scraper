@@ -1,7 +1,7 @@
 import "@logseq/libs";
 import { settings } from "./settings.ts";
 
-import commands from "./commands/index.ts";
+import commands from "./commands/commands.ts";
 
 logseq.useSettingsSchema(settings).ready(main).catch(console.error);
 
