@@ -8,7 +8,7 @@ import {
 import { err, ok, Result } from "neverthrow";
 import grammar, { RefltagActionDict } from "./grammar.ohm-bundle";
 import { astErr, AstError } from "../../errors/parser-errors";
-import { Mode, Modes } from "../../interpreter/modes";
+import { Mode, Modes, modes as modesList } from "../../interpreter/modes";
 import { IterationNode } from "ohm-js";
 import { wrapValue } from "../../data";
 
@@ -23,10 +23,8 @@ const tokens = {
         ? _modes.children[0].children[0].children // .asIteration()
             .map((mode) => mode.children[1].sourceString as Mode)
             .reduce((modes, mode) => {
-              switch (mode) {
-                case "inline":
-                case "zip":
-                  modes[mode] = true;
+              if (modesList.includes(mode)) {
+                modes[mode] = true;
               }
               return modes;
             }, {} as Modes)
