@@ -1,17 +1,45 @@
 Refltag {
-  Block = Quantifier? Modes? selector Template?
+  Block = Quantifier? Modes<blockMode>? selector? Template?
   Root = url Template?
 
+  selector = (~"\n" any)+
+  
   Template = "\n" (#(templateText) | TemplateEscape)*
   templateText = (~("{" | "}") any)+
   TemplateEscape = "{" Expression? "}"
 
   Quantifier = ("?" | "+" | "*") ","
-  Modes =  mode+ ","
-  mode = "@" identifierPart+ ~"@"
+  Modes<_mode> =  mode<_mode>+ ","
+  mode<_mode> = "@" _mode ~"@"
+  blockMode = "inline"
+  // root = "inline"
+
+  // Statement =
+  //   | Definition
+  //   | Expression
+  
+  // keywords =
+  //   | "let"
+  
+  // Definition = keyword<"let"> identifier "=" Expression
 
   Expression (an expression) =
+  //   | Indexing
+  //   | PropertyAccess
+  //   | FunctionCall
+  //   | Lambda
     | Term
+  
+  // Indexing = Expression "[" Expression "]"
+  // PropertyAccess = Expression "." identifier
+
+  // FunctionCall =
+  //   | Expression "(" ListOf<Expression, ","> ")" -- parenthesized
+  //   | Expression NonemptyListOf<Expression, ","> -- freeForm
+
+  // Lambda =
+  //   | "(" ListOf<identifier, ","> ")" "=>" Expression -- parenthesized
+  //   | identifier "=>" Expression -- freeForm
 
   Term =
     | Term ("+" | "-") Factor -- binary
@@ -22,13 +50,20 @@ Refltag {
 
   Primary =
     | "(" Expression ")" -- parenthesized
+  //   | Object
+  //   | Array
     | identifier
     | literal
     
+  // Object = "{" ListOf<ObjectMapping, ","> "}"
+  // ObjectMapping = identifier ":" Expression
+  // Array = "[" ListOf<Expression, ","> "]"
+
+  // identifier = ~keyword<keywords> (("$" | "_" | letter) identifierPart* "!"?) ~identifierPart
   identifier = /* ~keyword<keywords> */ letter identifierPart* ~identifierPart
+  // keyword<k> = k ~identifierPart
   identifierPart = "_" | alnum
 
-  selector = (~"\n" any)+
   url = nonWhitespace+ // Check at parsing function
 
   literal = number | string

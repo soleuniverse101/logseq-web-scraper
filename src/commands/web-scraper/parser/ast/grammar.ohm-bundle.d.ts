@@ -12,14 +12,16 @@ import {
 } from 'ohm-js';
 
 export interface RefltagActionDict<T> extends BaseActionDict<T> {
-  Block?: (this: NonterminalNode, arg0: IterationNode, arg1: IterationNode, arg2: NonterminalNode, arg3: IterationNode) => T;
+  Block?: (this: NonterminalNode, arg0: IterationNode, arg1: IterationNode, arg2: IterationNode, arg3: IterationNode) => T;
   Root?: (this: NonterminalNode, arg0: NonterminalNode, arg1: IterationNode) => T;
+  selector?: (this: NonterminalNode, arg0: IterationNode) => T;
   Template?: (this: NonterminalNode, arg0: TerminalNode, arg1: IterationNode) => T;
   templateText?: (this: NonterminalNode, arg0: IterationNode) => T;
   TemplateEscape?: (this: NonterminalNode, arg0: TerminalNode, arg1: IterationNode, arg2: TerminalNode) => T;
   Quantifier?: (this: NonterminalNode, arg0: TerminalNode, arg1: TerminalNode) => T;
   Modes?: (this: NonterminalNode, arg0: IterationNode, arg1: TerminalNode) => T;
-  mode?: (this: NonterminalNode, arg0: TerminalNode, arg1: IterationNode) => T;
+  mode?: (this: NonterminalNode, arg0: TerminalNode, arg1: Node) => T;
+  blockMode?: (this: NonterminalNode, arg0: TerminalNode) => T;
   Expression?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   Term_binary?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
   Term?: (this: NonterminalNode, arg0: NonterminalNode) => T;
@@ -29,7 +31,6 @@ export interface RefltagActionDict<T> extends BaseActionDict<T> {
   Primary?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   identifier?: (this: NonterminalNode, arg0: NonterminalNode, arg1: IterationNode) => T;
   identifierPart?: (this: NonterminalNode, arg0: NonterminalNode | TerminalNode) => T;
-  selector?: (this: NonterminalNode, arg0: IterationNode) => T;
   url?: (this: NonterminalNode, arg0: IterationNode) => T;
   literal?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   number?: (this: NonterminalNode, arg0: IterationNode) => T;
