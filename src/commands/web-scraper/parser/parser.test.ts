@@ -7,6 +7,12 @@ describe("Parser", () => {
     expect(testParse("test")).toMatchObject(
       err({ message: "Parsing failed on line 1 :\nInvalid URL : test" }),
     );
+    expect(testParse("https://soleuniverse.me\n  @inline, test\n   template")).toMatchObject(
+      err({
+        message:
+          "Parsing failed on line 2 :\nInline block cannot contain a template",
+      }),
+    );
 
     expect(testParse("https://soleuniverse.me")).toMatchObject(
       ok([
@@ -54,7 +60,7 @@ describe("Parser", () => {
                   astNode: {
                     type: "block",
                     selector: "li.class",
-                    modes: { context: "inline" },
+                    modes: { inline: true },
                   },
                 },
               ],
