@@ -4,23 +4,28 @@ import { Value, wrapValue } from "../data";
 import { SourceLineContext } from "../errors/parser-errors";
 import { runtimeErr } from "../errors/runtime-errors";
 import {
-  Reserved,
-  reserved,
   ReservedKey,
   reservedKeys,
   ReservedType,
+  reservedValues,
 } from "./reserved";
 
 export class Environment {
   private readonly variables: Map<String, Value> = new Map();
   private parent: Environment | null = null;
 
+  public constructor() {
+    for (const initialized of reservedKeys.initialized) {
+      this.load(initialized, reservedValues.initialized[initialized]());
+    }
+  }
+
   public async define(
     name: string,
     value: Value,
     sourceContext: SourceLineContext,
   ): RuntimeResult<void> {
-    if (reservedKeys.includes(name)) {
+    if (reservedKeys.all.includes(name)) {
       return runtimeErr("reservedIdentifier", { name }, sourceContext);
     }
     return this.load(name, value);
@@ -40,7 +45,10 @@ export class Environment {
   ) {
     this.variables.set(
       element,
-      wrapValue<Reserved[Key]>(reserved[element], rawValue as any),
+      wrapValue<ReservedType<Key>["type"]>(
+        reservedValues.all[element] as ReservedType<Key>["type"],
+        rawValue as any,
+      ),
     );
   }
   public getReserved<Key extends ReservedKey>(
@@ -48,7 +56,7 @@ export class Environment {
   ): ReservedType<Key>["value"] {
     const value = this.variables.get(element);
     if (!value) {
-      throw new Error("Reserved value not defined");
+      throw new Error(`Reserved value ${element} not defined`);
     }
     return value.value as ReservedType<Key>["value"];
   }
@@ -74,7 +82,7 @@ export class Environment {
     let env = new Environment();
     env.parent = this;
 
-    for (const key of reservedKeys) {
+    for (const key of reservedKeys.inherited) {
       const value = this.variables.get(key);
       if (value) {
         env.load(key, value);
