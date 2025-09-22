@@ -5,12 +5,12 @@ import { ok } from "neverthrow";
 
 describe("parseASTNode", () => {
   test("block", () => {
-    expect(parseASTNode("?, @inline, selector\ntest{}")).toEqual(
+    expect(parseASTNode("?, @zip, selector\ntest{}")).toEqual(
       ok({
         type: "block",
         selector: "selector",
         quantifier: "?",
-        modes: { context: "inline" },
+        modes: { zip: true },
         template: ["test", null],
       } satisfies ASTNode),
     );

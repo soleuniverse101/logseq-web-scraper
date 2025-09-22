@@ -2,6 +2,8 @@ import { ok, ResultAsync } from "neverthrow";
 import { SourceLineContext } from "../errors/parser-errors";
 import { runtimeErr } from "../errors/runtime-errors";
 import { RuntimeResult } from ".";
+import { OutputNode } from "./output";
+import { BlockUUID } from "@logseq/libs/dist/LSPlugin.user";
 
 export type FetchPage = typeof defaultFetchPage;
 
@@ -42,8 +44,42 @@ export async function defaultFetchPage(
 }
 
 export function elementText(element: HTMLElement): string {
-  return Array.from(element.childNodes).reduce(
-    (a, b) => a + (b.nodeType === 3 ? b.textContent : ""),
-    "",
-  );
+  return Array.from(element.childNodes)
+    .reduce((a, b) => a + (b.nodeType === 3 ? b.textContent : ""), "")
+    .trim();
+}
+
+export function zipByUUID(nodes: OutputNode[]): OutputNode[][] {
+  if (nodes.length == 0) {
+    return [];
+  }
+
+  const ids: BlockUUID[] = [];
+  const groups: Record<BlockUUID, OutputNode[]> = {};
+
+  for (const node of nodes) {
+    const id = node.context.blockUUID;
+    if (!(id in groups)) {
+      ids.push(id);
+      groups[id] = [];
+    }
+    const group = groups[id];
+    group.push(node);
+  }
+
+  let minLength = +Infinity;
+  for (const id of ids) {
+    minLength = Math.min(minLength, groups[id].length);
+  }
+
+  const zipped: OutputNode[][] = [];
+  for (let i = 0; i < minLength; i++) {
+    const group: OutputNode[] = [];
+    for (const id of ids) {
+      group.push(groups[id][i]);
+    }
+    zipped.push(group);
+  }
+
+  return zipped;
 }

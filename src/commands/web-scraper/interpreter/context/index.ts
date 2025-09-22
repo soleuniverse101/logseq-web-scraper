@@ -1,4 +1,5 @@
 import { RuntimeResult } from "..";
+import { SourceLineContext } from "../../errors/parser-errors";
 import { Environment } from "../environment";
 import { OutputNode } from "../output";
 
@@ -15,6 +16,7 @@ export type Context = {
   execute: (
     env: Environment,
     childrenOutput: OutputNode[],
+    sourceContext: SourceLineContext,
   ) => RuntimeResult<string | void>;
 };
 export type Contexts = Context[];

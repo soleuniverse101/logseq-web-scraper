@@ -104,6 +104,96 @@ describe("interpreter (full integration)", () => {
         },
       ]),
     );
+
+    expect(
+      await testInterpret(
+        `https://test.test/Fumiya_Tomozaki
+  @zip, div.zip
+    +, p`,
+      ),
+    ).toMatchObject(
+      ok([
+        {
+          children: [
+            {
+              content: "Main div",
+              children: [{ content: "Test1" }],
+            },
+            {
+              content: "Main div",
+              children: [{ content: "Test2" }],
+            },
+            {
+              content: "Main div",
+              children: [{ content: "Test3" }],
+            },
+          ],
+        },
+      ]),
+    );
+
+    expect(
+      await testInterpret(
+        `https://test.test/Fumiya_Tomozaki
+  @inline @zip, div.zip
+    +, p`,
+      ),
+    ).toMatchObject(
+      ok([
+        {
+          children: [
+            {
+              content: "Test1",
+            },
+            {
+              content: "Test2",
+            },
+            {
+              content: "Test3",
+            },
+          ],
+        },
+      ]),
+    );
+
+    expect(
+      await testInterpret(
+        `https://test.test/Fumiya_Tomozaki
+  @zip, div#multiple-zip
+   Group
+    +, h2
+    +, p`,
+      ),
+    ).toMatchObject(
+      ok([
+        {
+          children: [
+            {
+              content: "Group",
+              children: [
+                {
+                  content: "Title1",
+                },
+                {
+                  content: "Text1",
+                },
+              ],
+            },
+            {
+              content: "Group",
+              children: [
+                {
+                  content: "Title2",
+                },
+                {
+                  content: "Text2",
+                },
+              ],
+            },
+          ],
+        },
+      ]),
+    );
   });
 
   test("quantifiers", async () => {

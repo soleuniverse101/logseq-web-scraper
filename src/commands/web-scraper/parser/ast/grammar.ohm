@@ -11,7 +11,7 @@ Refltag {
   Quantifier = ("?" | "+" | "*") ","
   Modes<_mode> =  mode<_mode>+ ","
   mode<_mode> = "@" _mode ~"@"
-  blockMode = "inline"
+  blockMode = "inline" | "zip"
   // root = "inline"
 
   // Statement =

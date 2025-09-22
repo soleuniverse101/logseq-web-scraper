@@ -5,7 +5,12 @@ import { runtimeErr, RuntimeError } from "../errors/runtime-errors";
 import { ASTNode, ASTNodeFromType, ASTNodeType } from "../parser/ast";
 import { Block } from "../parser/blocks";
 import { Environment } from "./environment";
-import { elementText, defaultFetchPage, FetchPage } from "./interpreter-utils";
+import {
+  elementText,
+  defaultFetchPage,
+  FetchPage,
+  zipByUUID,
+} from "./interpreter-utils";
 import { outputNode, OutputNode } from "./output";
 import {
   interpretTemplate,
@@ -48,6 +53,8 @@ export class Interpreter {
       this.sourceContext.blockLine++;
       this.sourceContext.blockUUID = node.uuid;
 
+      const sourceContext = this.currentSourceContext();
+
       // this.extendScope();
 
       let result = await this.evaluate(node.astNode);
@@ -80,7 +87,11 @@ export class Interpreter {
           return err(childrenExec.error);
         }
 
-        const content = await context.execute(this.env, childrenOutput);
+        const content = await context.execute(
+          this.env,
+          childrenOutput,
+          sourceContext,
+        );
         if (content.isErr()) {
           return err(content.error);
         }
@@ -88,13 +99,7 @@ export class Interpreter {
         this.outScope();
 
         if (typeof content.value == "string") {
-          output.push(
-            outputNode(
-              content.value,
-              this.currentSourceContext(),
-              childrenOutput,
-            ),
-          );
+          output.push(outputNode(content.value, sourceContext, childrenOutput));
         } else {
           output.push(...childrenOutput);
         }
@@ -169,7 +174,6 @@ export class Interpreter {
         });
       } else {
         result = addContext((current) => {
-          console.log({ selector });
           const elements = current.querySelectorAll<HTMLElement>(selector);
 
           if (elements.length == 0 && quantifier == "+") {
@@ -184,43 +188,42 @@ export class Interpreter {
         return result;
       }
 
-      // if (!quantifier || quantifier == "?") {
-      //   const element = current.querySelector<HTMLElement>(selector);
-
-      //   if (!element) {
-      //     if (quantifier != "?") {
-      //       return runtimeErr(
-      //         "selectElementNotFound",
-      //         { selector },
-      //         this.currentSourceContext(),
-      //       );
-      //     }
-      //   } else {
-      //     addContext(element);
-      //   }
-      // } else {
-      //   const elements = current.querySelectorAll<HTMLElement>(selector);
-
-      //   if (elements.length == 0) {
-      //     if (quantifier != "*") {
-      //       return runtimeErr(
-      //         "selectElementNotFound",
-      //         { selector },
-      //         this.currentSourceContext(),
-      //       );
-      //     }
-      //   } else {
-      //     for (const element of elements) {
-      //       addContext(element);
-      //     }
-      //   }
-      // }
-
       for (let i = 0; i < contexts.length; i++) {
         const context = contexts[i];
 
         if (modes.inline) {
           context.execute = async () => ok();
+        }
+        if (modes.zip) {
+          const execute = context.execute;
+          context.execute = async (env, childrenOutput, sourceContext) => {
+            const groups = zipByUUID(childrenOutput);
+            const parentContent = await execute(
+              env,
+              childrenOutput,
+              sourceContext,
+            );
+            if (parentContent.isErr()) {
+              return parentContent;
+            }
+
+            const children: OutputNode[] = [];
+
+            for (const group of groups) {
+              if (typeof parentContent.value == "string") {
+                children.push(
+                  outputNode(parentContent.value, sourceContext, group),
+                );
+              } else {
+                children.push(...group);
+              }
+            }
+
+            childrenOutput.splice(0);
+            childrenOutput.push(...children);
+
+            return ok();
+          };
         }
       }
 

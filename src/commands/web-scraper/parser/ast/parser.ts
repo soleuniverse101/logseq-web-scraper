@@ -1,4 +1,10 @@
-import { ASTExpression, ASTNode, BlockTemplate, isExpression } from ".";
+import {
+  ASTExpression,
+  ASTNode,
+  ASTNodeFromType,
+  BlockTemplate,
+  isExpression,
+} from ".";
 import { err, ok, Result } from "neverthrow";
 import grammar, { RefltagActionDict } from "./grammar.ohm-bundle";
 import { astErr, AstError } from "../../errors/parser-errors";
@@ -11,29 +17,41 @@ type ASTResult = Result<ASTNode, AstError>;
 const semantics = grammar.createSemantics();
 
 const tokens = {
-  Block: (quantifier, modes, selector, template) =>
-    ok({
+  Block: (quantifier, _modes, selector, template) => {
+    const modes =
+      _modes.numChildren > 0
+        ? _modes.children[0].children[0].children // .asIteration()
+            .map((mode) => mode.children[1].sourceString as Mode)
+            .reduce((modes, mode) => {
+              switch (mode) {
+                case "inline":
+                case "zip":
+                  modes[mode] = true;
+              }
+              return modes;
+            }, {} as Modes)
+        : ({} satisfies Modes);
+
+    if (modes.inline && template.sourceString != "") {
+      return err(
+        new AstError(
+          "Inline block cannot contain a template",
+          template.source.startIdx,
+        ),
+      );
+    }
+
+    return ok({
       type: "block",
       selector: selector.sourceString,
       quantifier:
         quantifier.numChildren > 0
           ? (quantifier.children[0].children[0].sourceString as "?" | "+" | "*")
           : undefined,
-      modes:
-        modes.numChildren > 0
-          ? modes.children[0].children[0].children // .asIteration()
-              .map((mode) => mode.children[1].sourceString as Mode)
-              .reduce((modes, mode) => {
-                switch (mode) {
-                  case "inline":
-                  case "block":
-                    modes["context"] = mode;
-                }
-                return modes;
-              }, {} as Modes)
-          : {},
+      modes,
       template: parseTemplate(template),
-    }),
+    } satisfies ASTNodeFromType<"block">);
+  },
 
   Root: ({ sourceString: _url, source: urlSource }, template) => {
     const url = URL.parse(_url);
