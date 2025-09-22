@@ -86,43 +86,66 @@ describe("interpreter (full integration)", () => {
     );
   });
 
-  test("quantifiers", async () => {
+  test("modes", async () => {
     expect(
       await testInterpret(
-        `https://fr.wikipedia.org/wiki/Dr._Stone
-  @inline, #mw-content-text > div.mw-content-ltr.mw-parser-output > table:nth-child(70) > tbody > tr:nth-child(1)
-    +, th`,
+        `https://fr.wikipedia.org/Dr._Stone
+  @inline, #inline-test
+    p`,
       ),
     ).toMatchObject(
       ok([
         {
           children: [
             {
-              content: "Début",
-            },
-            {
-              content: "Fin\n",
+              content: "Direct child",
             },
           ],
+        },
+      ]),
+    );
+  });
+
+  test("quantifiers", async () => {
+    expect(
+      await testInterpret(
+        `https://test.test/Dr._Stone
+  ?, p`,
+      ),
+    ).toMatchObject(
+      ok([
+        {
+          children: [
+            {
+              content: "Is there",
+            },
+          ],
+        },
+      ]),
+    );
+    expect(
+      await testInterpret(
+        `https://test.test/Dr._Stone
+  ?, span`,
+      ),
+    ).toMatchObject(
+      ok([
+        {
+          children: [],
         },
       ]),
     );
 
     expect(
       await testInterpret(
-        `https://jaku-chara-tomozaki-kun.fandom.com/wiki/Fumiya_Tomozaki
-  [title="Atafami"]
-   [{}]({fullHref})`,
+        `https://test.test/Dr._Stone
+  #mw-content-text > div.mw-content-ltr.mw-parser-output > table:nth-of-type(4) > tbody > tr:nth-child(1)
+    +, th`,
       ),
     ).toMatchObject(
       ok([
         {
-          children: [
-            {
-              content:
-                "[Attack Families](https://jaku-chara-tomozaki-kun.fandom.com/wiki/Atafami)",
-            },
-          ],
+          children: [{ children: [{ content: "Début" }, { content: "Fin" }] }],
         },
       ]),
     );

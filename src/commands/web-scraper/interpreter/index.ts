@@ -156,19 +156,32 @@ export class Interpreter {
         return ok();
       };
 
-      if (!quantifier) {
-        const result = addContext((current) => {
+      let result;
+      if (!quantifier || quantifier == "?") {
+        result = addContext((current) => {
           const element = current.querySelector<HTMLElement>(selector);
 
           if (!element) {
-            return err();
+            return quantifier == "?" ? ok([]) : err();
           }
 
           return ok([element]);
         });
-        if (result.isErr()) {
-          return result;
-        }
+      } else {
+        result = addContext((current) => {
+          console.log({ selector });
+          const elements = current.querySelectorAll<HTMLElement>(selector);
+
+          if (elements.length == 0 && quantifier == "+") {
+            return err();
+          }
+
+          return ok(Array.from(elements));
+        });
+      }
+
+      if (result.isErr()) {
+        return result;
       }
 
       // if (!quantifier || quantifier == "?") {
