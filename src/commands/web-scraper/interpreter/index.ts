@@ -1,42 +1,44 @@
 import { err, ok, Result } from "neverthrow";
-import { Value, wrapNullable } from "../data";
+import { Value, wrapContexts } from "../data";
 import { SourceLineContext } from "../errors/parser-errors";
 import { runtimeErr, RuntimeError } from "../errors/runtime-errors";
-import {
-  ASTNode,
-  ASTNodeFromType,
-  ASTNodeType,
-  BlockTemplate,
-} from "../parser/ast";
+import { ASTNode, ASTNodeFromType, ASTNodeType } from "../parser/ast";
 import { Block } from "../parser/blocks";
-import { context, contexts, Contexts, emptyContext } from "./context";
 import { Environment } from "./environment";
-import { elementText, fetchPage } from "./interpreter-utils";
+import { elementText, defaultFetchPage, FetchPage } from "./interpreter-utils";
+import { outputNode, OutputNode } from "./output";
+import {
+  interpretTemplate,
+  loadElementTemplateData,
+  TemplateInterpreter,
+} from "./template";
+import { context } from "./context/context-utils";
+import { Contexts } from "./context";
 
 export type RuntimeResult<T = Value> = Promise<Result<T, RuntimeError>>;
 type ASTNodeEvaluator = {
   [Type in ASTNodeType]: (node: ASTNodeFromType<Type>) => RuntimeResult<Value>;
 };
 
-export type OutputNode = {
-  content: string;
-  children: OutputNode[];
-  context: SourceLineContext;
-};
-
-export function outputNode(
-  content: string,
-  sourceContext: Readonly<SourceLineContext>,
-  children: OutputNode[] = [],
-): OutputNode {
-  return { content, children, context: sourceContext };
-}
-
 export class Interpreter {
   private env = new Environment();
+  // Must be updated first before use
   private sourceContext: SourceLineContext = {
     blockLine: 0,
   } as SourceLineContext;
+  private templateInterpeter: TemplateInterpreter = {
+    evaluate: (node) => {
+      return this.evaluate(node);
+    },
+    currentSourceContext: () => {
+      return this.currentSourceContext();
+    },
+  };
+  private fetchPage: FetchPage;
+
+  private constructor(fetchPage: FetchPage) {
+    this.fetchPage = fetchPage;
+  }
 
   private async interpret(
     nodes: Block[],
@@ -46,7 +48,7 @@ export class Interpreter {
       this.sourceContext.blockLine++;
       this.sourceContext.blockUUID = node.uuid;
 
-      this.extendScope();
+      // this.extendScope();
 
       let result = await this.evaluate(node.astNode);
       if (result.isErr()) {
@@ -59,39 +61,56 @@ export class Interpreter {
         );
       }
 
-      for (const { execute } of result.value.value) {
-        const content = await execute(this.env);
+      for (const context of result.value.value) {
+        this.extendScope();
 
+        if (context.prepare) {
+          const prepare = await context.prepare(this.env);
+          if (prepare.isErr()) {
+            return err(prepare.error);
+          }
+        }
+
+        const childrenOutput: OutputNode[] = [];
+        const childrenExec = await this.interpret(
+          node.children,
+          childrenOutput,
+        );
+        if (childrenExec.isErr()) {
+          return err(childrenExec.error);
+        }
+
+        const content = await context.execute(this.env, childrenOutput);
         if (content.isErr()) {
           return err(content.error);
         }
 
-        let outputScope = output;
-        if (content.value) {
-          const _outputNode = outputNode(
-            content.value,
-            this.currentSourceContext(),
-          );
-          outputScope.push(_outputNode);
-          outputScope = _outputNode.children;
-        }
-
-        this.extendScope();
-
-        const exec = await this.interpret(node.children, outputScope);
-        if (exec.isErr()) {
-          return exec;
-        }
-
         this.outScope();
+
+        if (typeof content.value == "string") {
+          output.push(
+            outputNode(
+              content.value,
+              this.currentSourceContext(),
+              childrenOutput,
+            ),
+          );
+        } else {
+          output.push(...childrenOutput);
+        }
       }
     }
     return ok();
   }
 
-  public static async interpret(nodes: Block[]): RuntimeResult<OutputNode[]> {
+  public static async interpret(
+    nodes: Block[],
+    fetchPage: FetchPage = defaultFetchPage,
+  ): RuntimeResult<OutputNode[]> {
     const output: OutputNode[] = [];
-    return (await new Interpreter().interpret(nodes, output)).map(() => output);
+    return (await new Interpreter(fetchPage).interpret(nodes, output)).map(
+      () => output,
+    );
   }
 
   private evaluate(node: ASTNode): RuntimeResult<Value> {
@@ -99,155 +118,135 @@ export class Interpreter {
   }
 
   private evaluator: ASTNodeEvaluator = {
-    block: async ({ selector, modes, template, quantifier }) => {
+    block: async ({ template, quantifier, selector, modes }) => {
       const current = this.env.getReserved("_current");
 
-      if (!quantifier || quantifier == "?") {
-        const element = current.querySelector<HTMLElement>(selector);
+      const contexts: Contexts = [];
+      const addContext = (
+        getElements: (current: HTMLElement) => Result<HTMLElement[], void>,
+      ) => {
+        const elements = getElements(current);
 
-        if (!element) {
-          if (quantifier == "?") {
-            return ok(emptyContext());
-          }
+        if (elements.isErr()) {
           return runtimeErr(
             "selectElementNotFound",
             { selector },
             this.currentSourceContext(),
           );
-        } else if (modes.context == "inline") {
-          return ok(
-            context(async (env) => {
-              env.loadReserved("_current", element);
-              Interpreter.loadElementTemplateData(element, env);
-              return ok();
-            }),
+        }
+
+        for (const element of elements.value) {
+          contexts.push(
+            context(
+              async (env) => {
+                loadElementTemplateData(element, env);
+                return interpretTemplate(
+                  template,
+                  elementText(element),
+                  this.templateInterpeter,
+                );
+              },
+              async (env) => {
+                return ok(env.loadReserved("_current", element));
+              },
+            ),
           );
         }
 
-        return ok(
-          context((env) => {
-            this.env.loadReserved("_current", element);
-            Interpreter.loadElementTemplateData(element, env);
-            return this.interpretTemplate(template, elementText(element));
-          }),
-        );
-      }
+        return ok();
+      };
 
-      const elements = current.querySelectorAll<HTMLElement>(selector);
+      if (!quantifier) {
+        const result = addContext((current) => {
+          const element = current.querySelector<HTMLElement>(selector);
 
-      if (elements.length == 0) {
-        if (quantifier == "*") {
-          return ok(emptyContext());
-        }
-        return runtimeErr(
-          "selectElementNotFound",
-          { selector },
-          this.currentSourceContext(),
-        );
-      }
-
-      const _contexts: Contexts = [];
-      for (const element of elements) {
-        if (modes.context == "inline") {
-          _contexts.push({
-            execute: async (env) => {
-              env.loadReserved("_current", element);
-              Interpreter.loadElementTemplateData(element, env);
-              return ok();
-            },
-          });
-          continue;
-        }
-
-        const output = await this.interpretTemplate(
-          template,
-          elementText(element),
-        );
-        if (output.isErr()) {
-          return err(output.error);
-        }
-
-        _contexts.push({
-          execute: async (env) => {
-            env.loadReserved("_current", element);
-            Interpreter.loadElementTemplateData(element, env);
-            return ok(output.value);
-          },
-        });
-      }
-
-      return ok(contexts(..._contexts));
-    },
-
-    root: async ({ url, template }) =>
-      ok(
-        context(async (env) => {
-          const page = await fetchPage(url, this.currentSourceContext());
-          if (page.isErr()) {
-            return err(page.error);
+          if (!element) {
+            return err();
           }
 
-          env.loadReserved("_document", page.value);
-          env.loadReserved("_documentUrl", url.toString());
-          env.loadReserved("_current", page.value.body);
-          Interpreter.loadElementTemplateData(page.value.body, env);
-
-          return this.interpretTemplate(template, page.value.title);
-        }),
-      ),
-    identifier: async ({ name }) => this.env.get(name, this.sourceContext),
-    literal: async ({ value }) => ok(value),
-  } as const;
-
-  private async interpretTemplate(
-    template: BlockTemplate,
-    defaultText: string,
-  ): RuntimeResult<string> {
-    let output = "";
-
-    for (const part of template) {
-      if (typeof part == "string") {
-        output += part;
-      } else if (part) {
-        const expr = await this.evaluate(part);
-        if (expr.isErr()) {
-          return err(expr.error);
-        } else if (expr.value.type != "String") {
-          return runtimeErr(
-            "nonStringTemplateExpression",
-            { actualType: expr.value.type },
-            this.currentSourceContext(),
-          );
+          return ok([element]);
+        });
+        if (result.isErr()) {
+          return result;
         }
-        output += expr.value.value;
-      } else {
-        output += defaultText;
       }
-    }
 
-    return ok(output);
-  }
+      // if (!quantifier || quantifier == "?") {
+      //   const element = current.querySelector<HTMLElement>(selector);
 
-  private static loadElementTemplateData(
-    element: HTMLElement,
-    env: Environment,
-  ) {
-    const tagName = element.tagName.toLowerCase();
-    if (tagName == "a") {
-      const href = element.getAttribute("href");
-      env.load("href", wrapNullable("String", href));
-      env.load(
-        "fullHref",
-        wrapNullable(
-          "String",
-          href
-            ? (URL.parse(href, env.getReserved("_documentUrl"))?.toString() ??
-                null)
-            : null,
+      //   if (!element) {
+      //     if (quantifier != "?") {
+      //       return runtimeErr(
+      //         "selectElementNotFound",
+      //         { selector },
+      //         this.currentSourceContext(),
+      //       );
+      //     }
+      //   } else {
+      //     addContext(element);
+      //   }
+      // } else {
+      //   const elements = current.querySelectorAll<HTMLElement>(selector);
+
+      //   if (elements.length == 0) {
+      //     if (quantifier != "*") {
+      //       return runtimeErr(
+      //         "selectElementNotFound",
+      //         { selector },
+      //         this.currentSourceContext(),
+      //       );
+      //     }
+      //   } else {
+      //     for (const element of elements) {
+      //       addContext(element);
+      //     }
+      //   }
+      // }
+
+      for (let i = 0; i < contexts.length; i++) {
+        const context = contexts[i];
+
+        if (modes.inline) {
+          context.execute = async () => ok();
+        }
+      }
+
+      return ok(wrapContexts(...contexts));
+    },
+
+    root: async ({ url, template }) => {
+      const page = await this.fetchPage(url, this.currentSourceContext());
+      if (page.isErr()) {
+        return err(page.error);
+      }
+
+      return ok(
+        wrapContexts(
+          context(
+            async (env) => {
+              loadElementTemplateData(page.value.body, env);
+
+              return interpretTemplate(
+                template,
+                page.value.title,
+                this.templateInterpeter,
+              );
+            },
+            async (env) => {
+              env.loadReserved("_document", page.value);
+              env.loadReserved("_documentUrl", url.toString());
+              env.loadReserved("_current", page.value.body);
+
+              return ok();
+            },
+          ),
         ),
       );
-    }
-  }
+    },
+    identifier: async ({ name }) =>
+      this.env.get(name, this.currentSourceContext()),
+    literal: async ({ value }) => ok(value),
+  } as const;
 
   private extendScope() {
     this.env = this.env.extendScope();

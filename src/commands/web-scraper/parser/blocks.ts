@@ -1,6 +1,6 @@
 import { BlockEntity } from "@logseq/libs/dist/LSPlugin.user";
 import { ASTNode } from "./ast";
-import { OutputNode } from "../interpreter";
+import { OutputNode } from "../interpreter/output";
 
 export type RawBlock = Pick<BlockEntity, "content" | "uuid"> & {
   children: RawBlock[];

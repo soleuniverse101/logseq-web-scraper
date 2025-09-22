@@ -1,3 +1,3 @@
-export type Modes = { context?: "inline" | "block" };
+export type Modes = { inline?: boolean };
 
-export type Mode = NonNullable<Modes[keyof Modes]>;
+export type Mode = NonNullable<keyof Modes>;

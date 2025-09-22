@@ -41,6 +41,9 @@ export type ValueFromType<Type extends ValueType> = Extract<
 //   value: ValueFromType<Type>[];
 // };
 
+export function wrapContexts(...contexts: Contexts): ValueFromType<"Contexts"> {
+  return { type: "Contexts", value: contexts };
+}
 export function wrapValue<Type extends NonNullValueType>(
   type: Type,
   value: ValueFromType<Type>["value"],
