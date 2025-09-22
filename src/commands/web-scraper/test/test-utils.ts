@@ -1,7 +1,10 @@
 import { v4 as uuidv4 } from "uuid";
 import { RawBlock } from "../parser/blocks";
-import { Interpreter } from "../interpreter";
+import { Interpreter, RuntimeResult } from "../interpreter";
 import { Parser } from "../parser";
+import { SourceLineContext } from "../errors/parser-errors";
+import { ok } from "neverthrow";
+import { testPages } from "../examples/pages/testPages";
 
 export function parseTestBlocks(src: string, indentLevel = 2): RawBlock[] {
   function getIndent(line: string) {
@@ -73,5 +76,18 @@ export function testInterpret(src: string) {
   if (parsed.isErr()) {
     throw parsed.error;
   }
-  return Interpreter.interpret(parsed.value);
+  return Interpreter.interpret(parsed.value, fetchPageTest);
+}
+
+export async function fetchPageTest(
+  url: URL,
+  _sourceContext: SourceLineContext,
+): RuntimeResult<HTMLDocument> {
+  const { pathname } = url;
+
+  if (!(pathname in testPages)) {
+    throw new Error(`Test URL ${pathname} not present in pages folder`);
+  }
+
+  return ok(Document.parseHTMLUnsafe(testPages[pathname]));
 }

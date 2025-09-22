@@ -5,7 +5,7 @@ import { testInterpret } from "../test/test-utils";
 describe("interpreter (full integration)", () => {
   test("simple fetch", async () => {
     expect(
-      await testInterpret("https://en.wikipedia.org/wiki/Dexter_(TV_series)"),
+      await testInterpret("https://test.test/Dexter_(TV_series)"),
     ).toMatchObject(
       ok([
         {
@@ -17,9 +17,7 @@ describe("interpreter (full integration)", () => {
 
   test("simple fetch + block", async () => {
     expect(
-      await testInterpret(
-        "https://mrrobot.fandom.com/wiki/Mr._Robot\n  .mw-page-title-main",
-      ),
+      await testInterpret("https://test.test/Mr._Robot\n  .mw-page-title-main"),
     ).toMatchObject(
       ok([
         {
@@ -33,7 +31,7 @@ describe("interpreter (full integration)", () => {
   test("nesting", async () => {
     expect(
       await testInterpret(
-        `https://en.wikipedia.org/wiki/The_Pet_Girl_of_Sakurasou
+        `https://test.test/The_Pet_Girl_of_Sakurasou
   @inline, dl:nth-of-type(6)
     dt
     dt span[lang="ja"]`,
@@ -54,7 +52,7 @@ describe("interpreter (full integration)", () => {
   test("templates", async () => {
     expect(
       await testInterpret(
-        `https://en.wikipedia.org/wiki/I_Made_Friends_with_the_Second_Prettiest_Girl_in_My_Class
+        `https://test.test/I_Made_Friends_with_the_Second_Prettiest_Girl_in_My_Class
  Title is '{}'
   dt:nth-of-type(2)
    Best girl is {}`,
@@ -71,7 +69,7 @@ describe("interpreter (full integration)", () => {
 
     expect(
       await testInterpret(
-        `https://jaku-chara-tomozaki-kun.fandom.com/wiki/Fumiya_Tomozaki
+        `https://test.test/Fumiya_Tomozaki
   [title="Atafami"]
    [{}]({fullHref})`,
       ),
@@ -80,8 +78,7 @@ describe("interpreter (full integration)", () => {
         {
           children: [
             {
-              content:
-                "[Attack Families](https://jaku-chara-tomozaki-kun.fandom.com/wiki/Atafami)",
+              content: "[Attack Families](https://test.test/wiki/Atafami)",
             },
           ],
         },

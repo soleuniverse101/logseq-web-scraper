@@ -8,6 +8,7 @@
     "dev": "vite",
     "dev-logseq": "vite build --watch",
     "build-parser": "ohm generateBundles -e --withTypes src/**/*.ohm",
+    "build-tests": "node scripts/generateParserTestFiles.js && prettier -w src/commands/web-scraper/examples/pages",
     "format": "prettier -w .",
     "test:browser": "vitest --config=vitest.browser.config.ts"
   },

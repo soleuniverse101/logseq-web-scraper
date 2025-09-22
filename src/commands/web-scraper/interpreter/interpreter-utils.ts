@@ -3,7 +3,9 @@ import { SourceLineContext } from "../errors/parser-errors";
 import { runtimeErr } from "../errors/runtime-errors";
 import { RuntimeResult } from ".";
 
-export async function fetchPage(
+export type FetchPage = typeof defaultFetchPage;
+
+export async function defaultFetchPage(
   url: URL,
   sourceContext: SourceLineContext,
 ): RuntimeResult<HTMLDocument> {
